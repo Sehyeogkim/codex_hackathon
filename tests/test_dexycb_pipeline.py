@@ -134,6 +134,24 @@ class DexYCBPipelineTests(unittest.TestCase):
         self.assertAlmostEqual(result["frames"][-1]["ee_position"][2], 0.54)
         self.assertEqual(result["frames"][1]["gripper_width"], 0.08)
         self.assertEqual(result["frames"][2]["gripper_width"], 0.025)
+        self.assertEqual(result["grasp_detection_method"], "confirmed_rgb_pinch")
+
+    def test_rgb_pickup_falls_back_to_minimum_finite_pinch_ratio(self) -> None:
+        payload = _vision_payload()
+        for frame, ratio in zip(
+            payload["frames"], [0.9, 0.8, 0.7, 0.75, 0.85, 0.95]
+        ):
+            frame["pinch_ratio"] = ratio
+
+        result = dexycb_pipeline.build_rgb_pickup_trajectory(
+            payload, _calibration(), confirmation_frames=3
+        )
+
+        self.assertEqual(result["grasp_frame"], 2)
+        self.assertEqual(
+            result["grasp_detection_method"], "minimum_rgb_pinch_ratio_fallback"
+        )
+        self.assertEqual(result["pinch_ratio_at_grasp"], 0.7)
 
     def test_rgb_pickup_rejects_low_hand_coverage(self) -> None:
         payload = _vision_payload()

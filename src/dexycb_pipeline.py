@@ -355,7 +355,7 @@ def _pickup_grasp_position(
     close_threshold: float,
     confirmation_frames: int,
     grasp_frame: int | None,
-) -> int:
+) -> tuple[int, str]:
     if not math.isfinite(close_threshold) or close_threshold < 0:
         raise ValueError("pinch_close_threshold must be a non-negative finite number")
     if confirmation_frames <= 0:
@@ -365,7 +365,7 @@ def _pickup_grasp_position(
             if frame.get("frame_index") == grasp_frame:
                 if position >= len(frames) - 1:
                     raise ValueError("grasp frame must leave at least one lift frame")
-                return position
+                return position, "manual_frame"
         raise ValueError(f"grasp_frame={grasp_frame} is not present in RGB observations")
 
     run_start: int | None = None
@@ -382,10 +382,19 @@ def _pickup_grasp_position(
                 run_start = position
             run_length += 1
             if run_length >= confirmation_frames and run_start < len(frames) - 1:
-                return run_start
+                return run_start, "confirmed_rgb_pinch"
         else:
             run_start = None
             run_length = 0
+    finite_ratios = [
+        (float(frame["pinch_ratio"]), position)
+        for position, frame in enumerate(frames[:-1])
+        if isinstance(frame.get("pinch_ratio"), (int, float))
+        and math.isfinite(float(frame["pinch_ratio"]))
+    ]
+    if finite_ratios:
+        _, position = min(finite_ratios, key=lambda item: (item[0], item[1]))
+        return position, "minimum_rgb_pinch_ratio_fallback"
     raise ValueError(
         "no RGB pinch grasp found; adjust pinch_close_threshold, "
         "confirmation_frames, or set --grasp-frame"
@@ -440,7 +449,7 @@ def build_rgb_pickup_trajectory(
     robot_xy = retarget.transform_palms(
         palms, retarget.compute_homography(config)
     )
-    grasp_position = _pickup_grasp_position(
+    grasp_position, grasp_detection_method = _pickup_grasp_position(
         frames,
         close_threshold=close_threshold,
         confirmation_frames=confirmation_frames,
@@ -486,6 +495,8 @@ def build_rgb_pickup_trajectory(
         "schema_version": 1,
         "source_video": vision_payload.get("source_video"),
         "grasp_frame": frames[grasp_position].get("frame_index", grasp_position),
+        "grasp_detection_method": grasp_detection_method,
+        "pinch_ratio_at_grasp": frames[grasp_position].get("pinch_ratio"),
         "rgb_right_hand_coverage": coverage,
         "trajectory_method": "rgb_2d_hand_homography_with_phase_height",
         "dexycb_gt_trajectory_input": False,
