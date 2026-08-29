@@ -130,8 +130,8 @@ def load_training_request(
         if prepare_dexycb
         else 0
     )
-    if prepare_dexycb and sequence_limit != 3:
-        raise ValueError("dexycb_sequence_limit must be 3 for this demo")
+    if prepare_dexycb and sequence_limit != 2:
+        raise ValueError("dexycb_sequence_limit must be 2 for the verified subject-07 set")
 
     return TrainingRequest(
         schema_version=1,
@@ -279,7 +279,7 @@ def remote_training_command(request: TrainingRequest) -> str:
 
 
 def remote_dexycb_training_command(request: TrainingRequest) -> str:
-    """Download, prepare three DexYCB seeds, and train in one Pod/workspace."""
+    """Download, prepare two verified DexYCB seeds, and train in one Pod/workspace."""
 
     root = shlex.quote(REMOTE_ROOT)
     output = shlex.quote(REMOTE_OUTPUT)
@@ -310,14 +310,14 @@ def remote_dexycb_training_command(request: TrainingRequest) -> str:
         "python -c 'import torch; assert torch.cuda.is_available(), \"CUDA unavailable\"'; "
         f"bash scripts/download_dexycb.sh {dataset} 2>&1 | tee {output}/dexycb_download.log; "
         "python -c 'import hashlib,json,pathlib; "
-        f"p=pathlib.Path(\"{dataset}/subject-01.tar\"); "
+        f"p=pathlib.Path(\"{dataset}/subject-07.tar.gz\"); "
         "h=hashlib.sha256(); f=p.open(\"rb\"); "
         "all(h.update(chunk) is None for chunk in iter(lambda:f.read(1048576),b\"\")); f.close(); "
-        "d={\"dataset\":\"DexYCB\",\"subject\":\"01\",\"license\":\"CC BY-NC 4.0\","
+        "d={\"dataset\":\"DexYCB\",\"subject\":\"07\",\"license\":\"CC BY-NC 4.0\","
         "\"source\":\"UCBProject/DexYCB Hugging Face mirror\","
         "\"archive_bytes\":p.stat().st_size,\"sha256\":h.hexdigest()}; "
         f"pathlib.Path(\"{REMOTE_OUTPUT}/dexycb_download.json\").write_text(json.dumps(d,indent=2))'; "
-        f"tar --no-same-owner -xf {dataset}/subject-01.tar -C {extracted}; "
+        f"tar --no-same-owner -xzf {dataset}/subject-07.tar.gz -C {extracted}; "
         "python -m src.runpod_dexycb_runner "
         f"{extracted} --output-dir {prepared} --config config/demo_config.json "
         f"--limit {request.dexycb_sequence_limit} 2>&1 | tee {output}/dexycb_prepare.log; "
@@ -686,7 +686,7 @@ def run_training_on_runpod(
                 "data_provenance": (
                     {
                         "dataset": "DexYCB",
-                        "subject": "01",
+                        "subject": "07",
                         "license": "CC BY-NC 4.0",
                         "prepared_on_runpod": True,
                     }
@@ -730,7 +730,7 @@ def dry_run_plan(request_path: str | Path) -> dict[str, Any]:
         ),
         "seed_trajectories": list(request.seed_trajectory_sources),
         "seed_source": (
-            "DexYCB subject-01, prepared remotely"
+            "DexYCB subject-07, prepared remotely"
             if request.prepare_dexycb_on_pod
             else "local uploaded trajectories"
         ),

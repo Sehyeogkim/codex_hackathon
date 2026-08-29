@@ -192,14 +192,14 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_discovers_first_matching_grasp_sequences_in_time_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_150000", ycb_ids=[6, 10], grasp_index=0)
-            _make_sequence(root, "20200928_140000", ycb_ids=[1, 6], grasp_index=1)
-            _make_sequence(root, "20200928_130000", ycb_ids=[6], grasp_index=0)
+            _make_sequence(root, "20200928_150000", ycb_ids=[5, 10], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[1, 5], grasp_index=1)
+            _make_sequence(root, "20200928_130000", ycb_ids=[5], grasp_index=0)
             # Mustard is present but is not the grasped object.
-            _make_sequence(root, "20200928_120000", ycb_ids=[6, 2], grasp_index=1)
+            _make_sequence(root, "20200928_120000", ycb_ids=[5, 2], grasp_index=1)
             # Matching object but wrong hand.
             _make_sequence(
-                root, "20200928_110000", ycb_ids=[6], grasp_index=0, side="left"
+                root, "20200928_110000", ycb_ids=[5], grasp_index=0, side="left"
             )
 
             records = dexycb_pipeline.discover_sequences(root, limit=2)
@@ -208,14 +208,51 @@ class DexYCBPipelineTests(unittest.TestCase):
                 [record.sequence_id for record in records],
                 ["20200928_130000", "20200928_140000"],
             )
-            self.assertTrue(all(record.grasp_object_id == 6 for record in records))
+            self.assertTrue(all(record.grasp_object_id == 5 for record in records))
             self.assertTrue(all(record.mano_side == "right" for record in records))
+
+    def test_discovers_metadata_below_archive_wrappers_and_sequence_subdir(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dataset = root / "archive" / "release" / "dex-ycb"
+            sequence = _make_sequence(
+                dataset, "20200928_140000", ycb_ids=[5], grasp_index=0
+            )
+            annotations = sequence / "annotations"
+            annotations.mkdir()
+            (sequence / "meta.yml").replace(annotations / "METADATA.JSON")
+            # A repository-level metadata file is not sequence metadata and is ignored.
+            (root / "metadata.json").write_text("{}", encoding="utf-8")
+
+            records = dexycb_pipeline.discover_sequences(root, limit=None)
+
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0].sequence_dir, sequence)
+            self.assertEqual(records[0].subject, "20200928-subject-07")
+            self.assertEqual(records[0].sequence_id, "20200928_140000")
+            self.assertEqual(records[0].grasp_object_id, 5)
+
+    def test_rgb_only_archive_fails_with_actionable_metadata_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            camera = (
+                root
+                / "wrapper"
+                / "20200709-subject-01"
+                / "20200709_152541"
+                / "839512060362"
+            )
+            camera.mkdir(parents=True)
+            (camera / "color_000000.jpg").write_bytes(b"not-needed")
+
+            with self.assertRaisesRegex(ValueError, "RGB-only mirror"):
+                dexycb_pipeline.discover_sequences(root, limit=None)
 
     def test_encodes_all_cameras_and_selects_best_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             sequence = _make_sequence(
-                root, "20200928_140000", ycb_ids=[6], grasp_index=0
+                root, "20200928_140000", ycb_ids=[5], grasp_index=0
             )
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
             scores = {"cam-a.mp4": 0.25, "cam-b.mp4": 0.75}
@@ -241,7 +278,7 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_rejects_invalid_detection_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_140000", ycb_ids=[6], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[5], grasp_index=0)
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
 
             with self.assertRaisesRegex(ValueError, r"expected a value in \[0, 1\]"):
@@ -253,7 +290,7 @@ class DexYCBPipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             sequence = _make_sequence(
-                root, "20200928_140000", ycb_ids=[6], grasp_index=0
+                root, "20200928_140000", ycb_ids=[5], grasp_index=0
             )
             (sequence / "cam-a" / "color_000002.jpg").unlink()
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
@@ -266,7 +303,7 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_builds_hybrid_with_explicit_segment_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_140000", ycb_ids=[6], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[5], grasp_index=0)
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
             human = _human_trajectory()
             original = copy.deepcopy(human)
@@ -312,7 +349,8 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_prepare_sequences_writes_manifest_and_hybrid(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_140000", ycb_ids=[6], grasp_index=0)
+            _make_sequence(root, "20200928_130000", ycb_ids=[5], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[5], grasp_index=0)
             output = root / "prepared"
 
             manifest = dexycb_pipeline.prepare_sequences(
@@ -320,8 +358,12 @@ class DexYCBPipelineTests(unittest.TestCase):
                 output,
                 coverage_callback=lambda video: 0.8 if video.stem == "cam-b" else 0.2,
                 trajectory_callback=lambda _video, _record: _human_trajectory(),
-                target_positions=[[0.60, 0.15, 0.44]],
-                limit=1,
+                target_positions=[
+                    [0.60, 0.15, 0.44],
+                    [0.58, 0.14, 0.44],
+                ],
+                limit=2,
+                requested_sequence_count=3,
             )
 
             manifest_path = output / "dexycb_manifest.json"
@@ -330,10 +372,16 @@ class DexYCBPipelineTests(unittest.TestCase):
             self.assertEqual(saved, manifest)
             item = manifest["sequences"][0]
             self.assertEqual(item["camera_selection"]["selected"]["serial"], "cam-b")
+            selection = manifest["selection"]
+            self.assertEqual(selection["object_id"], 5)
+            self.assertEqual(selection["requested_sequence_count"], 3)
+            self.assertEqual(selection["available_matching_sequence_count"], 2)
+            self.assertEqual(selection["selected_sequence_count"], 2)
+            self.assertTrue(selection["limitations"])
             hybrid_path = Path(item["hybrid_trajectory"])
             self.assertTrue(hybrid_path.is_file())
             hybrid = json.loads(hybrid_path.read_text(encoding="utf-8"))
-            self.assertEqual(hybrid["provenance"]["sequence_id"], "20200928_140000")
+            self.assertEqual(hybrid["provenance"]["sequence_id"], "20200928_130000")
 
 
 if __name__ == "__main__":

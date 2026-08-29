@@ -12,15 +12,15 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
     def test_finds_wrapped_subject_root(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
             root = Path(temp_name)
-            subject = root / "wrapper" / "dataset" / "20200709-subject-01"
+            subject = root / "wrapper" / "dataset" / "20200709-subject-07"
             subject.mkdir(parents=True)
             found = runpod_dexycb_runner.find_dataset_root(root)
         self.assertEqual(found, subject.parent.resolve())
 
-    def test_prepares_three_hybrids_and_auditable_stage(self) -> None:
+    def test_prepares_two_hybrids_and_auditable_stage(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
             root = Path(temp_name)
-            (root / "20200709-subject-01").mkdir()
+            (root / "20200709-subject-07").mkdir()
             config = root / "config.json"
             config.write_text(
                 json.dumps({"pinch_close_threshold": 0.45, "table_z": 0.44}),
@@ -58,18 +58,20 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
                 trajectory_callback,
                 target_positions,
                 limit,
+                requested_sequence_count,
             ):
-                self.assertEqual(limit, 3)
-                self.assertEqual(len(target_positions), 3)
+                self.assertEqual(limit, 2)
+                self.assertEqual(requested_sequence_count, 3)
+                self.assertEqual(len(target_positions), 2)
                 items = []
-                for index in range(3):
+                for index in range(2):
                     video = Path(output_dir) / f"camera-{index}.mp4"
                     self.assertEqual(coverage_callback(video), 1.0)
                     human = trajectory_callback(
                         video,
                         dexycb_pipeline.SequenceRecord(
                             Path(output_dir),
-                            "20200709-subject-01",
+                            "20200709-subject-07",
                             f"sequence-{index}",
                             4,
                             (5,),
@@ -102,14 +104,14 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
             )
         self.assertEqual(stage, saved)
         self.assertEqual(stage["status"], "completed")
-        self.assertEqual(stage["hybrid_seed_count"], 3)
-        self.assertEqual(calls["coverage"], 3)
-        self.assertEqual(calls["trajectory"], 3)
+        self.assertEqual(stage["hybrid_seed_count"], 2)
+        self.assertEqual(calls["coverage"], 2)
+        self.assertEqual(calls["trajectory"], 2)
 
     def test_failure_is_written_to_stage_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
             root = Path(temp_name)
-            (root / "20200709-subject-01").mkdir()
+            (root / "20200709-subject-07").mkdir()
             config = root / "config.json"
             config.write_text(
                 json.dumps({"pinch_close_threshold": 0.45, "table_z": 0.44}),

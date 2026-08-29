@@ -34,7 +34,7 @@ def _write_cloud_request(directory: Path, **overrides: object) -> Path:
         "schema_version": 1,
         "job_name": "dexycb-cloud-training",
         "prepare_dexycb_on_pod": True,
-        "dexycb_sequence_limit": 3,
+        "dexycb_sequence_limit": 2,
         "seed_trajectories": [],
         "episodes": 500,
         "epochs": 300,
@@ -84,7 +84,6 @@ def _result_archive(*, accepted: bool = True, dexycb: bool = False) -> bytes:
                 "output/dexycb/runpod_dexycb_stage.json": b"{}",
                 "output/dexycb/seeds/seed_000.json": b"{}",
                 "output/dexycb/seeds/seed_001.json": b"{}",
-                "output/dexycb/seeds/seed_002.json": b"{}",
             }
         )
     with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
@@ -215,7 +214,7 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
         command = runner.remote_training_command(request)
         self.assertIn("scripts/download_dexycb.sh", command)
         self.assertIn(
-            "tar --no-same-owner -xf /workspace/dexycb/subject-01.tar",
+            "tar --no-same-owner -xzf /workspace/dexycb/subject-07.tar.gz",
             command,
         )
         self.assertIn("python -m src.runpod_dexycb_runner", command)
@@ -237,7 +236,7 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
         self.assertTrue(public["prepare_dexycb_on_pod"])
         self.assertEqual(public["seed_trajectories"], [])
         self.assertIn("scripts/download_dexycb.sh", names)
-        self.assertFalse(any(name.endswith("subject-01.tar") for name in names))
+        self.assertFalse(any(name.endswith("subject-07.tar.gz") for name in names))
 
     def test_dry_run_needs_no_seed_files_or_api_key(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
@@ -303,7 +302,7 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
         self.assertEqual(assessment["eval_successes"], 9)
         self.assertFalse(assessment["gates"]["success_threshold"])
 
-    def test_cloud_assessment_requires_download_manifest_and_three_seeds(self) -> None:
+    def test_cloud_assessment_requires_download_manifest_and_two_seeds(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
             temp = Path(temp_name)
             request = runner.load_training_request(_write_cloud_request(temp))

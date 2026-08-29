@@ -14,6 +14,8 @@ import argparse
 import ast
 import json
 import math
+import os
+import re
 import statistics
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
@@ -24,8 +26,25 @@ import cv2
 import numpy as np
 
 
-MUSTARD_BOTTLE_YCB_ID = 6
+MUSTARD_BOTTLE_YCB_ID = 5
 DEXYCB_LICENSE = "CC BY-NC 4.0"
+_METADATA_FILENAMES = {
+    "meta.yml",
+    "meta.yaml",
+    "meta.json",
+    "metadata.yml",
+    "metadata.yaml",
+    "metadata.json",
+    "sequence_meta.yml",
+    "sequence_meta.yaml",
+    "sequence_meta.json",
+    "sequence_metadata.yml",
+    "sequence_metadata.yaml",
+    "sequence_metadata.json",
+}
+_SUBJECT_DIRECTORY = re.compile(r"^\d{8}-subject-\d{2}$")
+_SEQUENCE_DIRECTORY = re.compile(r"^\d{8}_\d{6}$")
+_CAMERA_DIRECTORY = re.compile(r"^\d{12}$")
 
 
 @dataclass(frozen=True)
@@ -114,8 +133,13 @@ def _load_meta(path: Path) -> dict[str, Any]:
     return value
 
 
-def _sequence_from_meta(meta_path: Path) -> SequenceRecord:
-    meta = _load_meta(meta_path)
+def _sequence_from_meta(
+    meta_path: Path,
+    *,
+    dataset_root: Path | None = None,
+    metadata: Mapping[str, Any] | None = None,
+) -> SequenceRecord:
+    meta = dict(metadata) if metadata is not None else _load_meta(meta_path)
     required = ("num_frames", "ycb_ids", "ycb_grasp_ind", "mano_sides")
     missing = [key for key in required if key not in meta]
     if missing:
@@ -138,12 +162,26 @@ def _sequence_from_meta(meta_path: Path) -> SequenceRecord:
     if grasp_index < 0 or grasp_index >= len(object_ids):
         raise ValueError(f"{meta_path}: ycb_grasp_ind is out of range")
 
-    sequence_dir = meta_path.parent
-    try:
-        relative = sequence_dir.relative_to(meta_path.parents[2])
-        subject = relative.parts[0]
-    except (ValueError, IndexError):
-        subject = sequence_dir.parent.name
+    search_root = dataset_root.resolve() if dataset_root is not None else None
+    ancestry = [meta_path.parent, *meta_path.parents[1:]]
+    if search_root is not None:
+        ancestry = [
+            path
+            for path in ancestry
+            if path == search_root or search_root in path.resolve().parents
+        ]
+    sequence_dir = next(
+        (path for path in ancestry if _SEQUENCE_DIRECTORY.fullmatch(path.name)),
+        meta_path.parent,
+    )
+    subject = next(
+        (
+            path.name
+            for path in [sequence_dir, *sequence_dir.parents]
+            if _SUBJECT_DIRECTORY.fullmatch(path.name)
+        ),
+        sequence_dir.parent.name,
+    )
     return SequenceRecord(
         sequence_dir=sequence_dir,
         subject=subject,
@@ -153,6 +191,29 @@ def _sequence_from_meta(meta_path: Path) -> SequenceRecord:
         ycb_grasp_ind=grasp_index,
         mano_side=str(mano_sides[0]).casefold(),
     )
+
+
+def metadata_candidates(dataset_root: str | Path) -> list[Path]:
+    """Find sequence metadata through archive wrappers without scanning images.
+
+    Raw DexYCB archives may add one or more wrapper directories and some mirrors
+    rename ``meta.yml`` to ``metadata.json``.  Camera serial directories are
+    pruned before traversal so a 12 GB subject does not require visiting every
+    JPEG.  An RGB-only mirror correctly returns no candidates.
+    """
+
+    dataset_root = Path(dataset_root)
+    if not dataset_root.is_dir():
+        raise FileNotFoundError(f"DexYCB root not found: {dataset_root}")
+    found: list[Path] = []
+    for current, directories, filenames in os.walk(dataset_root, topdown=True):
+        directories[:] = sorted(
+            name for name in directories if not _CAMERA_DIRECTORY.fullmatch(name)
+        )
+        for filename in sorted(filenames):
+            if filename.casefold() in _METADATA_FILENAMES:
+                found.append(Path(current) / filename)
+    return sorted(found, key=lambda path: path.as_posix().casefold())
 
 
 def discover_sequences(
@@ -170,9 +231,41 @@ def discover_sequences(
     if limit is not None and limit <= 0:
         raise ValueError("limit must be positive or None")
 
+    candidates = metadata_candidates(dataset_root)
+    if not candidates:
+        raise ValueError(
+            "No DexYCB sequence metadata found under dataset root; this archive "
+            "may be an RGB-only mirror. Use a raw subject archive containing "
+            "meta.yml (or equivalent metadata) so internal YCB object id 5 can "
+            "be verified."
+        )
+
+    records_by_sequence: dict[Path, SequenceRecord] = {}
+    signature_count = 0
+    required = {"num_frames", "ycb_ids", "ycb_grasp_ind", "mano_sides"}
+    for meta_path in candidates:
+        meta = _load_meta(meta_path)
+        if not required.issubset(meta):
+            # A generic metadata.json next to an archive is not necessarily
+            # DexYCB sequence metadata.
+            continue
+        signature_count += 1
+        record = _sequence_from_meta(
+            meta_path, dataset_root=dataset_root, metadata=meta
+        )
+        key = record.sequence_dir.resolve()
+        previous = records_by_sequence.get(key)
+        if previous is not None and previous != record:
+            raise ValueError(f"Conflicting DexYCB metadata for {record.sequence_dir}")
+        records_by_sequence[key] = record
+    if signature_count == 0:
+        raise ValueError(
+            "Metadata files were found, but none contain the DexYCB sequence "
+            "fields num_frames, ycb_ids, ycb_grasp_ind, and mano_sides"
+        )
+
     records: list[SequenceRecord] = []
-    for meta_path in sorted(dataset_root.glob("2020*-subject-*/2020*_*/meta.yml")):
-        record = _sequence_from_meta(meta_path)
+    for record in records_by_sequence.values():
         if record.grasp_object_id != object_id:
             continue
         if record.mano_side != mano_side.casefold():
@@ -646,11 +739,17 @@ def prepare_sequences(
     trajectory_callback: TrajectoryCallback | None = None,
     target_positions: Sequence[Sequence[float]] | None = None,
     limit: int = 3,
+    requested_sequence_count: int | None = None,
     fps: float = 30.0,
 ) -> dict[str, Any]:
     """Prepare selected videos and optional hybrid trajectories plus a manifest."""
 
-    records = discover_sequences(dataset_root, limit=limit)
+    if requested_sequence_count is None:
+        requested_sequence_count = limit
+    if requested_sequence_count < limit:
+        raise ValueError("requested_sequence_count must be at least limit")
+    all_records = discover_sequences(dataset_root, limit=None)
+    records = all_records[:limit]
     if len(records) < limit:
         raise ValueError(f"Expected {limit} matching sequences, found {len(records)}")
     if trajectory_callback is not None:
@@ -700,6 +799,17 @@ def prepare_sequences(
             "object_id": MUSTARD_BOTTLE_YCB_ID,
             "mano_side": "right",
             "order": "sequence_timestamp_ascending",
+            "requested_sequence_count": requested_sequence_count,
+            "available_matching_sequence_count": len(all_records),
+            "selected_sequence_count": len(records),
+            "limitations": (
+                [
+                    "requested sequence count exceeds verified metadata-backed "
+                    "mustard-bottle sequences available in this subject archive"
+                ]
+                if len(records) < requested_sequence_count
+                else []
+            ),
         },
         "sequences": prepared,
     }
@@ -721,6 +831,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("dataset_root", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=3)
+    parser.add_argument(
+        "--requested-sequences",
+        type=int,
+        help="Original requested count retained in provenance when limit is lower",
+    )
     parser.add_argument("--fps", type=float, default=30.0)
     parser.add_argument(
         "--config",
@@ -754,7 +869,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.camera_only:
         manifest = prepare_sequences(
-            args.dataset_root, args.output_dir, limit=args.limit, fps=args.fps
+            args.dataset_root,
+            args.output_dir,
+            limit=args.limit,
+            requested_sequence_count=args.requested_sequences,
+            fps=args.fps,
         )
     else:
         config = _load_json_object(args.config)
@@ -777,6 +896,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             trajectory_callback=extractor.trajectory,
             target_positions=[target for _ in range(args.limit)],
             limit=args.limit,
+            requested_sequence_count=args.requested_sequences,
             fps=args.fps,
         )
     print(
