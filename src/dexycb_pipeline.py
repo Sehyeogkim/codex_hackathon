@@ -24,7 +24,7 @@ import cv2
 import numpy as np
 
 
-MUSTARD_BOTTLE_YCB_ID = 5
+MUSTARD_BOTTLE_YCB_ID = 6
 DEXYCB_LICENSE = "CC BY-NC 4.0"
 
 

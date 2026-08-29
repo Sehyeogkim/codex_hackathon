@@ -192,14 +192,14 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_discovers_first_matching_grasp_sequences_in_time_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_150000", ycb_ids=[5, 10], grasp_index=0)
-            _make_sequence(root, "20200928_140000", ycb_ids=[1, 5], grasp_index=1)
-            _make_sequence(root, "20200928_130000", ycb_ids=[5], grasp_index=0)
+            _make_sequence(root, "20200928_150000", ycb_ids=[6, 10], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[1, 6], grasp_index=1)
+            _make_sequence(root, "20200928_130000", ycb_ids=[6], grasp_index=0)
             # Mustard is present but is not the grasped object.
-            _make_sequence(root, "20200928_120000", ycb_ids=[5, 2], grasp_index=1)
+            _make_sequence(root, "20200928_120000", ycb_ids=[6, 2], grasp_index=1)
             # Matching object but wrong hand.
             _make_sequence(
-                root, "20200928_110000", ycb_ids=[5], grasp_index=0, side="left"
+                root, "20200928_110000", ycb_ids=[6], grasp_index=0, side="left"
             )
 
             records = dexycb_pipeline.discover_sequences(root, limit=2)
@@ -208,14 +208,14 @@ class DexYCBPipelineTests(unittest.TestCase):
                 [record.sequence_id for record in records],
                 ["20200928_130000", "20200928_140000"],
             )
-            self.assertTrue(all(record.grasp_object_id == 5 for record in records))
+            self.assertTrue(all(record.grasp_object_id == 6 for record in records))
             self.assertTrue(all(record.mano_side == "right" for record in records))
 
     def test_encodes_all_cameras_and_selects_best_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             sequence = _make_sequence(
-                root, "20200928_140000", ycb_ids=[5], grasp_index=0
+                root, "20200928_140000", ycb_ids=[6], grasp_index=0
             )
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
             scores = {"cam-a.mp4": 0.25, "cam-b.mp4": 0.75}
@@ -241,7 +241,7 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_rejects_invalid_detection_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_140000", ycb_ids=[5], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[6], grasp_index=0)
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
 
             with self.assertRaisesRegex(ValueError, r"expected a value in \[0, 1\]"):
@@ -253,7 +253,7 @@ class DexYCBPipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             sequence = _make_sequence(
-                root, "20200928_140000", ycb_ids=[5], grasp_index=0
+                root, "20200928_140000", ycb_ids=[6], grasp_index=0
             )
             (sequence / "cam-a" / "color_000002.jpg").unlink()
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
@@ -266,7 +266,7 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_builds_hybrid_with_explicit_segment_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_140000", ycb_ids=[5], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[6], grasp_index=0)
             record = dexycb_pipeline.discover_sequences(root, limit=1)[0]
             human = _human_trajectory()
             original = copy.deepcopy(human)
@@ -312,7 +312,7 @@ class DexYCBPipelineTests(unittest.TestCase):
     def test_prepare_sequences_writes_manifest_and_hybrid(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            _make_sequence(root, "20200928_140000", ycb_ids=[5], grasp_index=0)
+            _make_sequence(root, "20200928_140000", ycb_ids=[6], grasp_index=0)
             output = root / "prepared"
 
             manifest = dexycb_pipeline.prepare_sequences(
