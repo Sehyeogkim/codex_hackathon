@@ -38,8 +38,10 @@ python -m src.runpod_training_runner config/training_request.json
 ```
 
 Confirm that the plan requests Secure On-Demand GPU priority RTX 4090 → A40 →
-L4, 500 validated episodes, 300 epochs, 20 held-out trials, DexYCB subject-01
-preparation, and cleanup in `finally`.
+L4, 500 validated episodes, 300 epochs, 20 held-out trials, DexYCB subject-07
+preparation, and cleanup in `finally`. Confirm that sequence selection requests
+3 matching mustard-bottle sequences but uses only the 2 sequences that are
+currently verified; do not report the requested count as the selected count.
 
 Only start the real RunPod job if both `RUNPOD_API_KEY` and an authorized SSH
 private-key path are already present in the sandbox. Never print either value.

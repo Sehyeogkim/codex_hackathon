@@ -102,8 +102,9 @@ export RUNLOOP_API_KEY='...'
 ## 실행 전략
 
 - Runloop: 고객 영상 변환과 MuJoCo 물리 검증을 격리 Devbox에서 실행한다.
-- RunPod: subject-01 다운로드, DexYCB RGB 변환, 500개 검증 episode 생성,
-  phase-conditioned BC 학습과 20회 평가를 한 Secure GPU Pod에서 실행한다.
+- RunPod: subject-07 다운로드, 요청한 3개 중 검증 가능한 DexYCB RGB sequence
+  2개를 변환하고, 500개 검증 episode 생성, phase-conditioned BC 학습과 20회
+  평가를 한 Secure GPU Pod에서 실행한다.
 - Reflex: GitHub 브랜치를 clone하고 두 작업의 로그·실패 원인·artifact를 추적한다.
 - Isaac Sim은 사용하지 않는다. 모든 물리 검증과 발표 영상은 MuJoCo로 만든다.
 
@@ -127,7 +128,8 @@ Pod는 RTX 4090 → A40 → L4 순서로 요청하며, 성공·실패 모두 `fi
 
 ## 데이터 전략
 
-- 정확성 검증: DexYCB subject-01의 서로 다른 오른손 머스터드 병 sequence 3개
+- 정확성 검증: DexYCB subject-07의 오른손 머스터드 병 sequence를 3개
+  요청했으나 조건을 통과한 2개만 사용하며, 이 제한을 selection provenance에 기록
 - 확장성 설명: Something-Something V2의 220,847개 hand-object 영상
 - 한계: 대규모 3인칭 영상과 정확한 3D pose를 동시에 제공하는 공개 데이터는 없음
 - DexYCB에는 place가 없으므로 RGB 기반 pickup과 생성 carry/place/release를 명시해 결합한다.
@@ -149,7 +151,8 @@ Pod는 RTX 4090 → A40 → L4 순서로 요청하며, 성공·실패 모두 `fi
 - 손 검출률 70% 이상, 사람 영상 한 개가 유효한 Franka episode로 변환된다.
 - 생성된 모든 관절값이 joint limit 안에 있다.
 - 시뮬레이션에서 충돌 없이 병을 옮기고 목표 거리가 7cm 미만이다.
-- DexYCB 서로 다른 sequence 3개의 provenance와 human/generated 구간을 보존한다.
+- DexYCB에서 요청한 3개와 실제 검증·선택된 2개의 수를 모두 기록하고,
+  선택된 2개 sequence의 provenance와 human/generated 구간을 보존한다.
 - 검증 통과 episode를 정확히 500개 생성한다.
 - 학습과 분리된 고정 seed 20개 중 10개 이상 성공해야 학습 데모를 통과시킨다.
 - 기준 미달이면 실제 수치를 공개하고 성공 처리하지 않는다.
@@ -159,7 +162,8 @@ Pod는 RTX 4090 → A40 → L4 순서로 요청하며, 성공·실패 모두 `fi
 - 로컬: 91/91 IK, 손 검출률 93.4%, `task_success=true`, 목표 거리 0.29mm
 - Runloop 실제 Devbox: 91/91 IK, `task_success=true`, 충돌 없음, 목표 거리 0.38mm
 - 테스트: 56개 통과
-- RunPod: dry-run과 mock cleanup 검증 완료. 실제 학습은 `RUNPOD_API_KEY`가 아직 없어 미실행
+- RunPod: subject-07 sequence 3개 요청 중 2개 검증·선택 계약과 cleanup을
+  검증했다. 실제 학습 성공은 회수된 summary/checkpoint가 있을 때만 주장한다.
 
 ## 핵심 메시지
 

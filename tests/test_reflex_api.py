@@ -118,8 +118,22 @@ class ReflexAPITests(unittest.TestCase):
             ],
         )
         manifest_text = path.read_text(encoding="utf-8")
-        self.assertNotIn("subject-07", manifest_text)
-        self.assertIn("subject-01", manifest_text)
+        self.assertIn("subject-07", manifest_text)
+        self.assertNotIn("subject-01", manifest_text)
+        self.assertIn("requests 3 matching sequences", manifest_text)
+        self.assertIn("currently verifies 2", manifest_text)
+
+        role_manifest_path = (
+            Path(__file__).resolve().parents[1] / "reflex" / "agents" / "manifest.json"
+        )
+        role_manifest = json.loads(role_manifest_path.read_text(encoding="utf-8"))
+        dataset = role_manifest["demo_dataset"]
+        self.assertEqual(dataset["subject"], "subject-07")
+        self.assertEqual(dataset["requested_sequence_count"], 3)
+        self.assertEqual(dataset["available_matching_sequence_count"], 2)
+        self.assertEqual(dataset["selected_sequence_count"], 2)
+        self.assertEqual(dataset["verified_sequence_count"], 2)
+        self.assertNotIn("sequence_count", dataset)
 
     def test_default_plan_validates_without_api_key_or_network(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:

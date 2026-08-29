@@ -68,11 +68,12 @@ video-003:         R → T → V → S
 
 ## Demo 2·DexYCB
 
-Demo 2의 대상은 **DexYCB subject-01**의 right-hand
-`006_mustard_bottle` sequence 3개다.
+Demo 2의 대상은 **DexYCB subject-07**의 right-hand
+`006_mustard_bottle` sequence다. 3개를 요청했지만 현재 조건에 맞아
+검증·선택된 sequence는 2개이므로, 2개만 학습 seed로 사용한다.
 
 ```text
-subject-01 RGB
+subject-07 RGB (requested 3, verified 2)
 → Reconstruction
 → Franka Retargeting
 → MuJoCo Physical Validation
@@ -89,7 +90,8 @@ job을 요청하고 결과를 회수하는 구조다.
 ## 현재 시연 범위
 
 - 구현됨: RGB 손 추출, 2D retargeting, Franka IK, MuJoCo 물리 검증,
-  DexYCB 선별/hybrid seed, RunPod runner와 개별 artifact.
+  DexYCB subject-07의 검증된 2개 sequence 선별/hybrid seed, RunPod runner와
+  개별 artifact. 3개 요청 대비 2개만 검증됐다는 selection provenance를 보존한다.
 - 계약만 정의됨: 4개 role prompt, role manifest, job/gate/handoff schema.
 - 미구현: 4개 Reflex session 생성 자동화, persistent worker queue, cross-Devbox
   artifact handoff, 전체 pipeline supervisor.

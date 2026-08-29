@@ -14,7 +14,7 @@
     {
       "name": "robot-data-reconstruction",
       "prompt_file": "../reflex/agents/reconstruction.prompt.md",
-      "role_context": "Perform only the reconstruction stage for DexYCB subject-01: convert the selected RGB video into frame-aligned right-hand observations and report measured coverage."
+      "role_context": "Perform only the reconstruction stage for DexYCB subject-07: the selection requests 3 matching sequences but currently verifies 2; convert only selected RGB videos into frame-aligned right-hand observations and report measured coverage and the requested/selected count limitation."
     },
     {
       "name": "robot-data-retargeting",

@@ -11,9 +11,12 @@
   },
   "demo_dataset": {
     "name": "DexYCB",
-    "subject": "subject-01",
+    "subject": "subject-07",
     "object": "006_mustard_bottle",
-    "sequence_count": 3,
+    "requested_sequence_count": 3,
+    "available_matching_sequence_count": 2,
+    "selected_sequence_count": 2,
+    "verified_sequence_count": 2,
     "trajectory_input": "selected_camera_rgb",
     "dexycb_gt_trajectory_input": false
   },
