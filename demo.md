@@ -102,7 +102,7 @@ export RUNLOOP_API_KEY='...'
 ## 실행 전략
 
 - Runloop: 고객 영상 변환과 MuJoCo 물리 검증을 격리 Devbox에서 실행한다.
-- RunPod: subject-07 다운로드, DexYCB RGB 변환, 500개 검증 episode 생성,
+- RunPod: subject-01 다운로드, DexYCB RGB 변환, 500개 검증 episode 생성,
   phase-conditioned BC 학습과 20회 평가를 한 Secure GPU Pod에서 실행한다.
 - Reflex: GitHub 브랜치를 clone하고 두 작업의 로그·실패 원인·artifact를 추적한다.
 - Isaac Sim은 사용하지 않는다. 모든 물리 검증과 발표 영상은 MuJoCo로 만든다.
@@ -127,7 +127,7 @@ Pod는 RTX 4090 → A40 → L4 순서로 요청하며, 성공·실패 모두 `fi
 
 ## 데이터 전략
 
-- 정확성 검증: DexYCB subject-07의 오른손 머스터드 병 sequence 3개
+- 정확성 검증: DexYCB subject-01의 서로 다른 오른손 머스터드 병 sequence 3개
 - 확장성 설명: Something-Something V2의 220,847개 hand-object 영상
 - 한계: 대규모 3인칭 영상과 정확한 3D pose를 동시에 제공하는 공개 데이터는 없음
 - DexYCB에는 place가 없으므로 RGB 기반 pickup과 생성 carry/place/release를 명시해 결합한다.

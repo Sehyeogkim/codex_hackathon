@@ -100,6 +100,23 @@ def _calibration() -> dict:
 
 
 class DexYCBPipelineTests(unittest.TestCase):
+    def test_load_meta_supports_top_level_block_lists(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_name:
+            path = Path(temp_name) / "meta.yml"
+            path.write_text(
+                "num_frames: 72\n"
+                "ycb_ids:\n"
+                "- 5\n"
+                "- 11\n"
+                "ycb_grasp_ind: 0\n"
+                "mano_sides:\n"
+                "- right\n",
+                encoding="utf-8",
+            )
+            meta = dexycb_pipeline._load_meta(path)
+        self.assertEqual(meta["ycb_ids"], [5, 11])
+        self.assertEqual(meta["mano_sides"], ["right"])
+
     def test_builds_rgb_only_pickup_from_confirmed_pinch(self) -> None:
         result = dexycb_pipeline.build_rgb_pickup_trajectory(
             _vision_payload(), _calibration(), confirmation_frames=3

@@ -17,15 +17,15 @@ def find_dataset_root(extracted_root: str | Path) -> Path:
     extracted_root = Path(extracted_root).resolve()
     if not extracted_root.is_dir():
         raise FileNotFoundError(f"DexYCB extraction root not found: {extracted_root}")
-    direct = list(extracted_root.glob("2020*-subject-07"))
+    direct = list(extracted_root.glob("2020*-subject-01"))
     if direct:
         return extracted_root
-    subjects = sorted(extracted_root.rglob("2020*-subject-07"))
+    subjects = sorted(extracted_root.rglob("2020*-subject-01"))
     if not subjects:
-        raise FileNotFoundError("extracted archive does not contain DexYCB subject-07")
+        raise FileNotFoundError("extracted archive does not contain DexYCB subject-01")
     parents = {subject.parent.resolve() for subject in subjects}
     if len(parents) != 1:
-        raise ValueError("subject-07 appears under multiple dataset roots")
+        raise ValueError("subject-01 appears under multiple dataset roots")
     return parents.pop()
 
 
@@ -64,7 +64,7 @@ def prepare_dexycb_hybrids(
         "stage": "dexycb_prepare",
         "status": "running",
         "dataset": "DexYCB",
-        "subject": "07",
+        "subject": "01",
         "license": dexycb_pipeline.DEXYCB_LICENSE,
         "dataset_root": str(dataset_root),
         "sequence_limit": limit,

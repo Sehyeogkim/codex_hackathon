@@ -71,8 +71,9 @@ def _parse_scalar(value: str) -> Any:
 def _load_meta(path: Path) -> dict[str, Any]:
     """Load the flat YAML subset used by DexYCB ``meta.yml`` files.
 
-    DexYCB metadata only needs scalar values and inline lists for this pipeline,
-    so no runtime PyYAML dependency is required on a clean RunPod image.
+    DexYCB metadata only needs scalar values plus inline or top-level block
+    lists for this pipeline, so no runtime PyYAML dependency is required on a
+    clean RunPod image.
     JSON is accepted as well because JSON is a YAML subset and is convenient in
     fixtures.
     """
@@ -85,14 +86,29 @@ def _load_meta(path: Path) -> dict[str, Any]:
         value = json.loads(text)
     except json.JSONDecodeError:
         value = {}
+        block_list_key: str | None = None
         for line_number, raw_line in enumerate(text.splitlines(), start=1):
             line = raw_line.split("#", 1)[0].strip()
             if not line:
                 continue
+            if line.startswith("- "):
+                if block_list_key is None:
+                    raise ValueError(f"Unsupported YAML at {path}:{line_number}")
+                block_value = value.get(block_list_key)
+                if not isinstance(block_value, list):
+                    raise ValueError(f"Unsupported YAML at {path}:{line_number}")
+                block_value.append(_parse_scalar(line[2:]))
+                continue
             if ":" not in line:
                 raise ValueError(f"Unsupported YAML at {path}:{line_number}")
             key, raw_value = line.split(":", 1)
-            value[key.strip()] = _parse_scalar(raw_value)
+            key = key.strip()
+            if raw_value.strip():
+                value[key] = _parse_scalar(raw_value)
+                block_list_key = None
+            else:
+                value[key] = []
+                block_list_key = key
     if not isinstance(value, dict):
         raise ValueError(f"DexYCB metadata must be an object: {path}")
     return value

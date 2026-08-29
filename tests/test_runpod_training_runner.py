@@ -214,7 +214,10 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
             )
         command = runner.remote_training_command(request)
         self.assertIn("scripts/download_dexycb.sh", command)
-        self.assertIn("tar -xzf /workspace/dexycb/subject-07.tar.gz", command)
+        self.assertIn(
+            "tar --no-same-owner -xf /workspace/dexycb/subject-01.tar",
+            command,
+        )
         self.assertIn("python -m src.runpod_dexycb_runner", command)
         self.assertIn("mapfile -t seeds", command)
         self.assertIn('trajectory_args+=(--trajectory-json "$seed_path")', command)
@@ -234,7 +237,7 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
         self.assertTrue(public["prepare_dexycb_on_pod"])
         self.assertEqual(public["seed_trajectories"], [])
         self.assertIn("scripts/download_dexycb.sh", names)
-        self.assertFalse(any(name.endswith("subject-07.tar.gz") for name in names))
+        self.assertFalse(any(name.endswith("subject-01.tar") for name in names))
 
     def test_dry_run_needs_no_seed_files_or_api_key(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:

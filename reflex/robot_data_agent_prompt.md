@@ -38,7 +38,7 @@ python -m src.runpod_training_runner config/training_request.json
 ```
 
 Confirm that the plan requests Secure On-Demand GPU priority RTX 4090 → A40 →
-L4, 500 validated episodes, 300 epochs, 20 held-out trials, DexYCB subject-07
+L4, 500 validated episodes, 300 epochs, 20 held-out trials, DexYCB subject-01
 preparation, and cleanup in `finally`.
 
 Only start the real RunPod job if both `RUNPOD_API_KEY` and an authorized SSH

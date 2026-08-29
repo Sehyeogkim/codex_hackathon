@@ -268,7 +268,7 @@ def remote_training_command(request: TrainingRequest) -> str:
         "set -euo pipefail; "
         f"mkdir -p {root} {output}; "
         "trap 'tar -czf /tmp/robot-training-output.tar.gz -C /workspace output >/dev/null 2>&1 || true' EXIT; "
-        f"tar -xzf /tmp/robot-training.tar.gz -C {root}; "
+        f"tar --no-same-owner -xzf /tmp/robot-training.tar.gz -C {root}; "
         f"cd {root}; "
         f"python -m pip install -r requirements-runpod.txt 2>&1 | tee {output}/dependencies.log; "
         "python -c 'import torch; assert torch.cuda.is_available(), \"CUDA unavailable\"'; "
@@ -304,19 +304,20 @@ def remote_dexycb_training_command(request: TrainingRequest) -> str:
         "set -euo pipefail; "
         f"mkdir -p {root} {output} {dataset} {extracted} {prepared}; "
         "trap 'tar -czf /tmp/robot-training-output.tar.gz -C /workspace output >/dev/null 2>&1 || true' EXIT; "
-        f"tar -xzf /tmp/robot-training.tar.gz -C {root}; "
+        f"tar --no-same-owner -xzf /tmp/robot-training.tar.gz -C {root}; "
         f"cd {root}; "
         f"python -m pip install -r requirements-runpod.txt 2>&1 | tee {output}/dependencies.log; "
         "python -c 'import torch; assert torch.cuda.is_available(), \"CUDA unavailable\"'; "
         f"bash scripts/download_dexycb.sh {dataset} 2>&1 | tee {output}/dexycb_download.log; "
         "python -c 'import hashlib,json,pathlib; "
-        f"p=pathlib.Path(\"{dataset}/subject-07.tar.gz\"); "
+        f"p=pathlib.Path(\"{dataset}/subject-01.tar\"); "
         "h=hashlib.sha256(); f=p.open(\"rb\"); "
         "all(h.update(chunk) is None for chunk in iter(lambda:f.read(1048576),b\"\")); f.close(); "
-        "d={\"dataset\":\"DexYCB\",\"subject\":\"07\",\"license\":\"CC BY-NC 4.0\","
+        "d={\"dataset\":\"DexYCB\",\"subject\":\"01\",\"license\":\"CC BY-NC 4.0\","
+        "\"source\":\"UCBProject/DexYCB Hugging Face mirror\","
         "\"archive_bytes\":p.stat().st_size,\"sha256\":h.hexdigest()}; "
         f"pathlib.Path(\"{REMOTE_OUTPUT}/dexycb_download.json\").write_text(json.dumps(d,indent=2))'; "
-        f"tar -xzf {dataset}/subject-07.tar.gz -C {extracted}; "
+        f"tar --no-same-owner -xf {dataset}/subject-01.tar -C {extracted}; "
         "python -m src.runpod_dexycb_runner "
         f"{extracted} --output-dir {prepared} --config config/demo_config.json "
         f"--limit {request.dexycb_sequence_limit} 2>&1 | tee {output}/dexycb_prepare.log; "
@@ -442,10 +443,20 @@ class SSHExecutor:
         return options
 
     def _execute(self, command: list[str]) -> None:
-        completed = self._run_command(command, text=True, capture_output=True)
+        # Remote training can run for hours and emit large download/progress logs.
+        # Keep stdout on the remote artifact logs instead of buffering it locally,
+        # but retain a bounded stderr tail so transport/shell failures are actionable.
+        completed = self._run_command(
+            command,
+            text=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
         if completed.returncode != 0:
+            stderr = (completed.stderr or "").strip()
+            detail = f": {stderr[-4000:]}" if stderr else ""
             raise RuntimeError(
-                f"remote transport failed with exit code {completed.returncode}"
+                f"remote transport failed with exit code {completed.returncode}{detail}"
             )
 
     def upload(self, local: Path, *, host: str, port: int, remote: str) -> None:
@@ -675,7 +686,7 @@ def run_training_on_runpod(
                 "data_provenance": (
                     {
                         "dataset": "DexYCB",
-                        "subject": "07",
+                        "subject": "01",
                         "license": "CC BY-NC 4.0",
                         "prepared_on_runpod": True,
                     }
@@ -719,7 +730,7 @@ def dry_run_plan(request_path: str | Path) -> dict[str, Any]:
         ),
         "seed_trajectories": list(request.seed_trajectory_sources),
         "seed_source": (
-            "DexYCB subject-07, prepared remotely"
+            "DexYCB subject-01, prepared remotely"
             if request.prepare_dexycb_on_pod
             else "local uploaded trajectories"
         ),

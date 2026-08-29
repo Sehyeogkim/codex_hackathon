@@ -12,7 +12,7 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
     def test_finds_wrapped_subject_root(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
             root = Path(temp_name)
-            subject = root / "wrapper" / "dataset" / "20200928-subject-07"
+            subject = root / "wrapper" / "dataset" / "20200709-subject-01"
             subject.mkdir(parents=True)
             found = runpod_dexycb_runner.find_dataset_root(root)
         self.assertEqual(found, subject.parent.resolve())
@@ -20,7 +20,7 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
     def test_prepares_three_hybrids_and_auditable_stage(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
             root = Path(temp_name)
-            (root / "20200928-subject-07").mkdir()
+            (root / "20200709-subject-01").mkdir()
             config = root / "config.json"
             config.write_text(
                 json.dumps({"pinch_close_threshold": 0.45, "table_z": 0.44}),
@@ -69,7 +69,7 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
                         video,
                         dexycb_pipeline.SequenceRecord(
                             Path(output_dir),
-                            "20200928-subject-07",
+                            "20200709-subject-01",
                             f"sequence-{index}",
                             4,
                             (5,),
@@ -109,7 +109,7 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
     def test_failure_is_written_to_stage_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as temp_name:
             root = Path(temp_name)
-            (root / "20200928-subject-07").mkdir()
+            (root / "20200709-subject-01").mkdir()
             config = root / "config.json"
             config.write_text(
                 json.dumps({"pinch_close_threshold": 0.45, "table_z": 0.44}),

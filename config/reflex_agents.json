@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "base_url": "https://reflex.runloop.ai/api",
+  "organization_id": "sehyeog-workspace-1",
+  "repo_slug": "Sehyeogkim/codex_hackathon",
+  "repo_branch": "codex/demo-runloop-reflex",
+  "agent_type": "opencode",
+  "prompt_mode": "implement",
+  "sandbox": {
+    "resource_size": "SMALL",
+    "idle_time_minutes": 15
+  },
+  "agents": [
+    {
+      "name": "robot-data-reconstruction",
+      "prompt_file": "../reflex/agents/reconstruction.prompt.md",
+      "role_context": "Perform only the reconstruction stage for DexYCB subject-01: convert the selected RGB video into frame-aligned right-hand observations and report measured coverage."
+    },
+    {
+      "name": "robot-data-retargeting",
+      "prompt_file": "../reflex/agents/retargeting.prompt.md",
+      "role_context": "Perform only retargeting: compile reconstruction output into canonical end-effector and Franka joint trajectories, preserving frame counts and constraints."
+    },
+    {
+      "name": "robot-data-physical-validation",
+      "prompt_file": "../reflex/agents/physical_validation.prompt.md",
+      "role_context": "Perform only physical validation in MuJoCo and report collision, joint-limit, task_success, and final-target-distance evidence from artifacts."
+    },
+    {
+      "name": "robot-data-scaling",
+      "prompt_file": "../reflex/agents/data_scaling.prompt.md",
+      "role_context": "Perform only data scaling: produce validated episodes with provenance and audit the RunPod training and guaranteed cleanup contract."
+    }
+  ]
+}
