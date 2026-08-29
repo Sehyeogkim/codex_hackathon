@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "job_name": "franka-mustard-bottle-bc",
+  "prepare_dexycb_on_pod": true,
+  "dexycb_sequence_limit": 3,
+  "seed_trajectories": [],
+  "episodes": 500,
+  "epochs": 300,
+  "eval_trials": 20,
+  "random_seed": 0,
+  "image_name": "runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04"
+}
