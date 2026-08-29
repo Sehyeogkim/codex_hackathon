@@ -212,6 +212,7 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
                 _write_cloud_request(Path(temp_name))
             )
         command = runner.remote_training_command(request)
+        self.assertIn("apt-get install -y -qq libgles2", command)
         self.assertIn("scripts/download_dexycb.sh", command)
         self.assertIn(
             "tar --no-same-owner -xzf /workspace/dexycb/subject-07.tar.gz",
