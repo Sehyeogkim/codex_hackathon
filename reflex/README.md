@@ -34,7 +34,7 @@ reflex-cli doctor
 reflex-cli run \
   --type codex \
   --name robot-data-agent \
-  --repo Sehyeogkim/codex_hackathon#main \
+  --repo Sehyeogkim/codex_hackathon#codex/demo-runloop-reflex \
   --json \
   -p "$(cat reflex/robot_data_agent_prompt.md)"
 ```
