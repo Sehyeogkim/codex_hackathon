@@ -1,0 +1,199 @@
+{
+  "job_id": "demo-91f-reflex",
+  "agent_name": "robot-data-scaling",
+  "agent_role_prompt": "reflex/agents/data_scaling.prompt.md",
+  "owned_stage": "scaling (src.reflex_stages run_scaling)",
+  "produced_at": "2026-08-30T00:42:00Z",
+  "proof_kind": "5-attempt Agent-I/O proof (NOT the 500-episode RunPod training claim)",
+  "isolated_devbox_note": "Requested module path 'persona.reflex_stages' and config 'dataminer/config/demo_config.json' do not exist in the tracked tree. The repo's actual implementation is 'src/reflex_stages' and 'config/demo_config.json'; the execution used these real tracked paths and the same real computation. No file was fabricated to match the requested names.",
+
+  "inputs": {
+    "tracked_video": {
+      "path": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+      "sha256": "7ccb44d5e0115f61a401cc79466ed83703541ab9be65ace93d766fe9b58ff4d8",
+      "bytes": 76620,
+      "frames": 91,
+      "fps": 30.0,
+      "width": 720,
+      "height": 406,
+      "integrity_check": "SHA256 matches data/demo2/manifest.md record for the Do-as-I-Do pick-place preview"
+    },
+    "scaling_config": {
+      "path": "config/demo_config.json",
+      "sha256": "8a13994be1a2c8697ead2d927ad75a024b1222a06c0d0eee0e681acde79a5de6",
+      "bytes": 372,
+      "requested_alias": "dataminer/config/demo_config.json (non-existent; mapped to tracked config/)"
+    }
+  },
+
+  "upstream_bootstrap": {
+    "disclaimer": "The required upstream JSON was absent in this isolated Devbox. These prerequisites were regenerated from the SAME tracked 91-frame video and recorded under upstream_bootstrap/. They are NOT owned by the Data Scaling stage and are clearly separated from scaling/.",
+    "reconstruction": {
+      "command_executed": "python -m src.reflex_stages reconstruction --input data/demo2/do_as_i_do_pick_place_preview.mp4 --output reflex_live/demo-91f-reflex/upstream_bootstrap/vision.json --job-id demo-91f-reflex",
+      "output": {
+        "path": "reflex_live/demo-91f-reflex/upstream_bootstrap/vision.json",
+        "sha256": "287219af0fe280f698c943d6498af9a4dd910d23c6978b93d23fc2a2eb7ab40a",
+        "bytes": 27779
+      },
+      "metrics": {
+        "frame_count": 91,
+        "right_hand_detections": 83,
+        "right_hand_coverage": 0.9121,
+        "duration_seconds": 2.167552,
+        "mediapipe_delegate": "CPU (XNNPACK); GPU/EGL unavailable in this headless Devbox"
+      }
+    },
+    "retargeting": {
+      "command_executed": "python -m src.reflex_stages retargeting --input reflex_live/demo-91f-reflex/upstream_bootstrap/vision.json --config config/demo_config.json --output reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json --grasp-frame 30 --release-frame 70 --job-id demo-91f-reflex",
+      "output": {
+        "path": "reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json",
+        "sha256": "1ea0f3e5d998ddebcc2cc09e0b00f989bb89191e90b14cc253877c67a097f8aa",
+        "bytes": 42934
+      },
+      "metrics": {
+        "frame_count": 91,
+        "valid_ik_frames": 91,
+        "invalid_ik_frames": 0,
+        "grasp_frame": 30,
+        "release_frame": 70,
+        "robot": "franka_emika_panda",
+        "duration_seconds": 1.350735
+      }
+    },
+    "physical_validation": {
+      "command_executed": "python -m src.reflex_stages validation --input reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json --config config/demo_config.json --output reflex_live/demo-91f-reflex/upstream_bootstrap/physics_validation.json --grasp-frame 30 --release-frame 70 --no-render --job-id demo-91f-reflex",
+      "output": {
+        "path": "reflex_live/demo-91f-reflex/upstream_bootstrap/physics_validation.json",
+        "sha256": "53b02528e2cb0f79371b228e9acfdf3b2f90f024f3de37607d488fc26a53dc15",
+        "bytes": 73024
+      },
+      "metrics": {
+        "passed": true,
+        "validation_passed": true,
+        "validation_task_success": true,
+        "validation_collision_free": true,
+        "target_distance_mm": 0.3829,
+        "gripper_close_events": 1,
+        "gripper_open_events": 1,
+        "control_steps": 187,
+        "render": null,
+        "rollout_mp4_produced": false,
+        "duration_seconds": 1.366803
+      }
+    }
+  },
+
+  "owned_scaling_stage": {
+    "requested_command_form": "python -m persona.reflex_stages scaling --input <panda_trajectory.json> --config dataminer/config/demo_config.json --output reflex_live/demo-91f-reflex/scaling/scaled_episodes.json --count 5 --seed 0 --job-id demo-91f-reflex",
+    "executed_command": "python -m src.reflex_stages scaling --input reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json --config config/demo_config.json --output reflex_live/demo-91f-reflex/scaling/scaled_episodes.json --count 5 --seed 0 --job-id demo-91f-reflex",
+    "command_path_mapping": {
+      "persona.reflex_stages -> src.reflex_stages": "no 'persona' package in tracked tree; real module is src.reflex_stages",
+      "dataminer/config/demo_config.json -> config/demo_config.json": "no 'dataminer/' dir in tracked tree; real config is config/demo_config.json"
+    },
+    "python_env": ".venv (numpy 1.26.4, opencv-python-headless 4.11.0.86, mediapipe 0.10.21, mujoco 3.12.0, pillow, scipy, imageio, imageio-ffmpeg)",
+    "input_panda_trajectory": {
+      "path": "reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json",
+      "sha256": "1ea0f3e5d998ddebcc2cc09e0b00f989bb89191e90b14cc253877c67a097f8aa",
+      "bytes": 42934
+    },
+    "output": {
+      "path": "reflex_live/demo-91f-reflex/scaling/scaled_episodes.json",
+      "sha256": "7191195fa279dc5bf6d7e5b17208e35a64ecbedf6b2d975aee53f6c219ca181b",
+      "bytes": 417631
+    },
+    "metrics": {
+      "stage": "scaling",
+      "schema_version": 1,
+      "seed": 0,
+      "seed_compiler": "object_centric_minimum_jerk",
+      "source_control_steps": 91,
+      "compiled_control_steps": 189,
+      "attempted": 5,
+      "accepted": 3,
+      "rejected": 2,
+      "pass_rate": 0.6,
+      "failure_breakdown": {
+        "joint_limits_ok": 0,
+        "collision_free": 0,
+        "smooth": 0,
+        "task_success": 2,
+        "ik_ok": 0
+      },
+      "episodes_serialized": 3,
+      "duration_seconds": 3.026327,
+      "agent_stage_job_id": "demo-91f-reflex"
+    },
+    "episodes_provenance": [
+      {
+        "index": 0,
+        "task": "move the bottle from A to B",
+        "robot": "franka_panda",
+        "fps": 30,
+        "num_steps": 200,
+        "source_video": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+        "retarget_source": "reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json",
+        "retarget_grasp_frame": 30,
+        "retarget_release_frame": 70,
+        "validation_passed": true,
+        "validation_task_success": true,
+        "validation_collision_free": true,
+        "validation_target_distance_m": 0.01905366264448817
+      },
+      {
+        "index": 1,
+        "task": "move the bottle from A to B",
+        "robot": "franka_panda",
+        "fps": 30,
+        "num_steps": 180,
+        "source_video": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+        "retarget_source": "reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json",
+        "retarget_grasp_frame": 30,
+        "retarget_release_frame": 70,
+        "validation_passed": true,
+        "validation_task_success": true,
+        "validation_collision_free": true
+      },
+      {
+        "index": 2,
+        "task": "move the bottle from A to B",
+        "robot": "franka_panda",
+        "fps": 30,
+        "num_steps": 201,
+        "source_video": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+        "retarget_source": "reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json",
+        "retarget_grasp_frame": 30,
+        "retarget_release_frame": 70,
+        "validation_passed": true,
+        "validation_task_success": true,
+        "validation_collision_free": true
+      }
+    ]
+  },
+
+  "gate": {
+    "definition": "physics passed AND accepted>0 AND every emitted episode has source provenance",
+    "physics_passed": true,
+    "accepted_gt_zero": true,
+    "every_emitted_episode_has_source_provenance": true,
+    "provenance_check_detail": "all 3 serialized episodes have non-empty source_video (the tracked mp4), retarget.source (the bootstrap panda_trajectory.json), and integer grasp_frame=30/release_frame=70",
+    "gate_passed": true,
+    "rejected_episodes_reported_not_hidden": true,
+    "rejected_reason": "2 of 5 attempts failed task_success in randomized scenes (failure_breakdown.task_success=2); these rejected validation records are counted in 'rejected', not forwarded as usable episodes"
+  },
+
+  "limitations": [
+    "This is a 5-attempt Agent-I/O proof on the local Devbox, NOT the separate 500-episode RunPod BC training claim.",
+    "No nested Devbox was created and no DexYCB was downloaded, per instructions.",
+    "Physics validation was run render-free (--no-render) because this headless Devbox has no OpenGL/EGL context; the rollout physics_rollout.mp4 was therefore NOT produced. The gate fields (passed/task_success/collision_free) do not depend on rendering and were evaluated from the MuJoCo forward dynamics.",
+    "MediaPipe ran on the CPU delegate (XNNPACK) because no GPU/EGL was available; right-hand coverage measured 91.21% (still above the 70% reconstruction gate).",
+    "The requested module/config names 'persona.reflex_stages' and 'dataminer/config/demo_config.json' are not present in the tracked repository; the execution used the real tracked equivalents 'src.reflex_stages' and 'config/demo_config.json'.",
+    "The upstream prerequisites (vision.json, panda_trajectory.json, physics_validation.json) were regenerated in this isolated Devbox under upstream_bootstrap/ and are distinguished from the owned scaling output under scaling/."
+  ],
+
+  "honesty_statements": [
+    "No result was fabricated: attempted=5, accepted=3, rejected=2, pass_rate=0.6 are the actual MuJoCo-validated counts.",
+    "Rejected episodes are reported and counted, not hidden or selected away.",
+    "The 3 accepted episodes are the only ones serialized; each carries source provenance and a passing validation record.",
+    "No secrets were read or emitted (RUNPOD_API_KEY is not used in this local proof; .env is not present)."
+  ]
+}

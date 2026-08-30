@@ -80,6 +80,9 @@ URL을 에이전트에 전달한다.
 queue/router는 아직 연결되지 않았으므로 연결 전에는 4-Agent live end-to-end
 완료를 주장하지 않는다.
 
-현재 네 Reflex Session은 실제로 생성되지 않았다. `python -m persona.reflex_api`는
-manifest를 검증하는 dry-run일 뿐이며, `--launch`를 명시하고 유효한
-`REFLEX_API_KEY`를 제공하기 전에는 Session이나 Devbox를 만들지 않는다.
+네 Reflex Session과 전용 Devbox는 실제로 생성됐고, `demo-91f-reflex` 단일 영상
+Job을 2026-08-30 UTC에 실행했다. 각 Session의 실제 입력·출력, SHA256, Gate와
+회수한 원격 artifact는
+[`../presentation/results/reflex_4_agent_job/README.md`](../presentation/results/reflex_4_agent_job/README.md)에
+정리돼 있다. Cross-Devbox handoff가 아직 없으므로 후단 Agent는 동일 원본에서
+필요한 upstream을 자기 Devbox에 재생성했으며, 이를 owned output과 구분해 기록했다.

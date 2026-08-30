@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "job_id": "demo-91f-reflex",
+  "agent_name": "robot-data-reconstruction",
+  "role": "reconstruction",
+  "produced_at": "2026-08-30T00:42:59.763007Z",
+  "job_context_provided": {
+    "robot": "franka_emika_panda",
+    "config_requested": "dataminer/config/demo_config.json",
+    "config_actual": "config/demo_config.json",
+    "config_note": "dataminer/config/demo_config.json does not exist in this repo; the actual config is config/demo_config.json. Reconstruction does not consume config, so this does not affect reconstruction output.",
+    "grasp_frame": 30,
+    "release_frame": 70,
+    "grasp_release_note": "grasp_frame/release_frame are retargeting/validation inputs, not consumed by the reconstruction stage."
+  },
+  "exact_command": "/tmp/opencode/venv/bin/python -m persona.reflex_stages reconstruction --input data/demo2/do_as_i_do_pick_place_preview.mp4 --output reflex_live/demo-91f-reflex/reconstruction/vision.json --job-id demo-91f-reflex",
+  "documented_command": "python -m persona.reflex_stages reconstruction --input data/demo2/do_as_i_do_pick_place_preview.mp4 --output reflex_live/demo-91f-reflex/reconstruction/vision.json --job-id demo-91f-reflex",
+  "interpreter": "/tmp/opencode/venv/bin/python (Python 3.12.3; venv with opencv-contrib-python 4.11.0.86, mediapipe 0.10.21, numpy 1.26.4, mujoco 3.12.0, scipy 1.17.1)",
+  "inputs": [
+    {
+      "path": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+      "sha256": "7ccb44d5e0115f61a401cc79466ed83703541ab9be65ace93d766fe9b58ff4d8",
+      "size_bytes": 76620,
+      "frames": 91,
+      "kind": "tracked_demo_video"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "reflex_live/demo-91f-reflex/reconstruction/vision.json",
+      "sha256": "5205c24115d1adbf2bd7b538002ba68dc29fef3779ca70a37ad86af3836806e9",
+      "size_bytes": 27775,
+      "kind": "owned_stage_output:frame_aligned_right_hand_observations"
+    },
+    {
+      "path": "reflex_live/demo-91f-reflex/reconstruction/reconstruction_report.json",
+      "sha256": "4c0e2895368f0367a6e57105a92a0e07a3f4aad022277214dbfcc869da31539f",
+      "size_bytes": 3111,
+      "kind": "owned_stage_output:reconstruction_report"
+    }
+  ],
+  "measured_metrics": {
+    "frame_count": 91,
+    "right_hand_detected_frames": 83,
+    "non_detected_frames": 8,
+    "right_hand_coverage": 0.912088,
+    "min_right_hand_coverage_standard": 0.7,
+    "coverage_meets_standard": true,
+    "fps": 30.0,
+    "width": 720,
+    "height": 406,
+    "coordinate_system": "normalized_image_uv",
+    "frame_index_valid_0_to_n_minus_1": true,
+    "timestamp_ms_valid_round_index_times_1000_over_fps": true,
+    "timestamp_strictly_increasing": true,
+    "detection_confidence_min": 0.587879,
+    "detection_confidence_max": 0.994781,
+    "null_observations_emitted_not_estimated": 8
+  },
+  "gate_passed": true,
+  "gate_detail": {
+    "criteria": [
+      "frame_count > 0",
+      "right_hand_coverage >= 0.70",
+      "frame_index == 0..n-1",
+      "timestamp_ms == round(frame_index * 1000 / fps)",
+      "timestamps strictly increasing"
+    ],
+    "frame_count_gt_0": true,
+    "coverage_ge_0_70": true,
+    "index_valid": true,
+    "timestamp_valid": true,
+    "timestamp_strictly_increasing": true,
+    "gate_passed": true
+  },
+  "limitations": [
+    "Reconstruction (MediaPipe vision) does not consume config, grasp_frame, or release_frame; those are downstream retargeting/validation parameters, recorded here as job context only.",
+    "MediaPipe ran on CPU (no GPU/EGL in this Devbox): mediaapipe fell back to the XNNPACK CPU delegate; detections are real, not estimated.",
+    "Frames with no right-hand detection (palm_uv null) are emitted as null observations; no missing hand coordinates are estimated or fabricated.",
+    "This job reconstructs the single tracked 91-frame demo video (data/demo2/do_as_i_do_pick_place_preview.mp4); the DexYCB 3-requested/2-verified sequence limitation does not apply to this single-video reconstruction job.",
+    "No upstream JSON prerequisite exists for reconstruction (it consumes the provided video directly), so no upstream_bootstrap artifact was produced."
+  ],
+  "provenance": {
+    "module": "src.reflex_stages (aliased as persona.reflex_stages)",
+    "trajectory_input": "selected_camera_rgb",
+    "dexycb_gt_trajectory_input": false,
+    "depth_trajectory_input": false
+  }
+}

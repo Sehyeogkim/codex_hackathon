@@ -1,0 +1,165 @@
+{
+  "job_id": "demo-91f-reflex",
+  "agent_name": "robot-data-physical-validation",
+  "agent_role": "PHYSICAL_VALIDATION",
+  "schema_version": 1,
+  "generated_at_utc": "2026-08-30T00:43:22.621753Z",
+  "input": {
+    "direct_inputs_to_this_stage": [
+      {
+        "path": "reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json",
+        "sha256": "d05deaa2e8b0b4c210987ab020b364c9b0ed91d4f17f3e334ca9c492aab52463",
+        "role": "canonical/panda trajectory (retargeting output, consumed as validation input)"
+      },
+      {
+        "path": "config/demo_config.json",
+        "sha256": "8a13994be1a2c8697ead2d927ad75a024b1222a06c0d0eee0e681acde79a5de6",
+        "role": "calibration config"
+      }
+    ],
+    "explicit_frames": {
+      "grasp_frame": 30,
+      "release_frame": 70
+    },
+    "bootstrap_provenance_not_owned_by_this_stage": [
+      {
+        "path": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+        "sha256": "7ccb44d5e0115f61a401cc79466ed83703541ab9be65ace93d766fe9b58ff4d8",
+        "role": "tracked seed video (91 frames)"
+      },
+      {
+        "path": "reflex_live/demo-91f-reflex/upstream_bootstrap/vision.json",
+        "sha256": "93ded1eb7bb75b20cd6d6871c74add331ee498e09d59ec3ec1662996954e91c0",
+        "role": "reconstruction output regenerated in-process"
+      }
+    ],
+    "note": "Upstream JSON was absent in this isolated Devbox (cross-Devbox handoff not implemented). vision.json and panda_trajectory.json were regenerated in-process from the same tracked video via src.reflex_stages reconstruction + retargeting, recorded under upstream_bootstrap/ and clearly distinguished from this owned stage."
+  },
+  "exact_command": "MUJOCO_GL=egl PYTHONPATH=/home/user/codex_hackathon /tmp/opencode/venv/bin/python -m src.reflex_stages validation --input reflex_live/demo-91f-reflex/upstream_bootstrap/panda_trajectory.json --config config/demo_config.json --output reflex_live/demo-91f-reflex/validation/physics_validation.json --video-output reflex_live/demo-91f-reflex/validation/physics_rollout.mp4 --grasp-frame 30 --release-frame 70 --job-id demo-91f-reflex",
+  "command_path_mapping": {
+    "requested_persona_module": "persona.reflex_stages",
+    "actual_tracked_module": "src.reflex_stages",
+    "requested_config": "dataminer/config/demo_config.json",
+    "actual_tracked_config": "config/demo_config.json",
+    "reason": "neither dataminer/ nor persona/ exists in this repo; used the tracked equivalents without altering code"
+  },
+  "output": {
+    "physics_validation_json": {
+      "path": "reflex_live/demo-91f-reflex/validation/physics_validation.json",
+      "sha256": "659793128cee7039be8723854326cabd85f85e86484b2721d6e3322c95f1a883",
+      "bytes": 73035
+    },
+    "physics_rollout_mp4": {
+      "path": "reflex_live/demo-91f-reflex/validation/physics_rollout.mp4",
+      "sha256": "9cc4aa510208484f8f6266a5f9dc06c63aa7bfca9b627fca5bcfc884bdfe255e",
+      "bytes": 630370,
+      "frames": 187,
+      "width": 480,
+      "height": 360,
+      "fps": 30
+    }
+  },
+  "measured_metrics": {
+    "passed": true,
+    "task": "mustard_bottle_pick_and_place",
+    "robot": "franka_emika_panda",
+    "source": {
+      "frame_count": 91,
+      "grasp_frame": 30,
+      "release_frame": 70,
+      "grasp_position": 30,
+      "release_position": 70,
+      "gripper_close_events": 1,
+      "gripper_open_events": 1,
+      "source_grasp_xy": [
+        0.475293,
+        0.148994
+      ],
+      "source_release_xy": [
+        0.606344,
+        0.225814
+      ]
+    },
+    "execution": {
+      "strategy": "object_centric_minimum_jerk",
+      "control_hz": 30,
+      "control_steps": 187,
+      "joint_names": [
+        "joint1",
+        "joint2",
+        "joint3",
+        "joint4",
+        "joint5",
+        "joint6",
+        "joint7"
+      ],
+      "action_space": "absolute_joint_target_plus_gripper_width",
+      "trajectory_rows": 187
+    },
+    "validation": {
+      "task_success": true,
+      "collision_free": true,
+      "joint_limits_ok": true,
+      "smooth": true,
+      "ik_ok": true,
+      "passed": true,
+      "contact_forbidden": 0,
+      "max_joint_margin_rad": 0.5709095193862915,
+      "max_jerk_rad_per_s3": 343.91605854034424,
+      "max_ik_error_m": 9.927157008282236e-05,
+      "target_distance_m": 0.00038293426980093065,
+      "bottle_start": [
+        0.55,
+        -0.15,
+        0.4873
+      ],
+      "bottle_end": [
+        0.5496,
+        0.15,
+        0.4874
+      ]
+    },
+    "rollout_object_motion": {
+      "bottle_start": [
+        0.550000011920929,
+        -0.15000100433826447,
+        0.48734501004219055
+      ],
+      "bottle_end": [
+        0.5496180057525635,
+        0.15002299845218658,
+        0.48742198944091797
+      ],
+      "z_min": 0.4856,
+      "z_max": 0.5648,
+      "z_mean": 0.5121,
+      "steps_lifted_above_threshold": "62 of 187",
+      "final_xy_distance_to_target_m": 0.000383
+    }
+  },
+  "gate": {
+    "required": {
+      "passed": "true",
+      "validation.task_success": "true",
+      "validation.collision_free": "true",
+      "validation.joint_limits_ok": "true",
+      "target_distance_m": "< 0.07"
+    },
+    "checks": {
+      "passed_true": true,
+      "task_success_true": true,
+      "collision_free_true": true,
+      "joint_limits_ok_true": true,
+      "target_distance_lt_0p07": true
+    },
+    "gate_passed": true
+  },
+  "limitations": [
+    "Cross-Devbox handoff is not implemented (reflex/agents/manifest.json handoff.implemented=false); no upstream bundle was pre-staged in this isolated Devbox. vision.json and panda_trajectory.json were regenerated in-process from the same tracked video via src.reflex_stages reconstruction+retargeting and recorded under upstream_bootstrap/; they are NOT outputs of this owned stage.",
+    "Job request referenced dataminer/config/demo_config.json and persona.reflex_stages; neither path exists in this repo. The actual tracked equivalents were used (config/demo_config.json and src.reflex_stages). No code was changed and no result was fabricated.",
+    "Canonical trajectory is an RGB-derived seed (MediaPipe palm UV + homography + phase-height), NOT DexYCB GT pose and NOT metric human-motion reconstruction (per data/dexycb/README.md). MuJoCo physics execution uses the object_centric_minimum_jerk strategy: the human video supplies grasp/release timing and the simulator resolves a feasible robot execution anchored to known bottle/target poses.",
+    "Headless Devbox had no GL by default; libegl1/libgles2/libopengl0 were installed via apt and MUJOCO_GL=egl was set for MuJoCo offscreen rendering. No secrets used, no nested Devbox launched, no DexYCB downloaded.",
+    "This single-process Retargeting->Validation run is NOT a 4-Agent live end-to-end demo (per workflow_runloop.md current scope). The Physical-Validation stage output (this agent_report.json, physics_validation.json, physics_rollout.mp4) is the only owned result.",
+    "physics_rollout.mp4 is byte-identical to the deterministic rollout produced by the same scene/seed/trajectory elsewhere (MuJoCo is deterministic); physics_validation.json differs only by reflex_stages agent_stage metadata (timestamps/paths)."
+  ]
+}

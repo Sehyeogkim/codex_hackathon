@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "job_id": "demo-91f-reflex",
+  "role": "reconstruction",
+  "agent_name": "robot-data-reconstruction",
+  "produced_at": "2026-08-30T00:42:59.761949Z",
+  "stage": "reconstruction",
+  "input": {
+    "video": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+    "video_sha256": "7ccb44d5e0115f61a401cc79466ed83703541ab9be65ace93d766fe9b58ff4d8",
+    "video_size_bytes": 76620,
+    "declared_frames": 91
+  },
+  "output": {
+    "vision_json": "reflex_live/demo-91f-reflex/reconstruction/vision.json",
+    "vision_json_sha256": "5205c24115d1adbf2bd7b538002ba68dc29fef3779ca70a37ad86af3836806e9"
+  },
+  "measured_metrics": {
+    "frame_count": 91,
+    "right_hand_detected_frames": 83,
+    "non_detected_frames": 8,
+    "right_hand_coverage": 0.912088,
+    "min_right_hand_coverage_standard": 0.7,
+    "coverage_meets_standard": true,
+    "fps": 30.0,
+    "width": 720,
+    "height": 406,
+    "coordinate_system": "normalized_image_uv",
+    "frame_index_valid_0_to_n_minus_1": true,
+    "timestamp_ms_valid_round_index_times_1000_over_fps": true,
+    "timestamp_strictly_increasing": true,
+    "detection_confidence_min": 0.587879,
+    "detection_confidence_max": 0.994781,
+    "null_observations_emitted_not_estimated": 8
+  },
+  "gate": {
+    "criteria": [
+      "frame_count > 0",
+      "right_hand_coverage >= 0.70",
+      "frame_index == 0..n-1",
+      "timestamp_ms == round(frame_index * 1000 / fps)",
+      "timestamps strictly increasing"
+    ],
+    "frame_count_gt_0": true,
+    "coverage_ge_0_70": true,
+    "index_valid": true,
+    "timestamp_valid": true,
+    "timestamp_strictly_increasing": true,
+    "gate_passed": true
+  },
+  "stage_metadata_from_reflex_stages": {
+    "schema_version": 1,
+    "stage": "reconstruction",
+    "job_id": "demo-91f-reflex",
+    "input": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+    "output": "reflex_live/demo-91f-reflex/reconstruction/vision.json",
+    "completed_at": "2026-08-30T00:42:44.197639Z",
+    "duration_seconds": 2.091381
+  },
+  "limitations": [
+    "Reconstruction (MediaPipe vision) does not consume config, grasp_frame, or release_frame; those are downstream retargeting/validation parameters, recorded here as job context only.",
+    "MediaPipe ran on CPU (no GPU/EGL in this Devbox): mediaapipe fell back to the XNNPACK CPU delegate; detections are real, not estimated.",
+    "Frames with no right-hand detection (palm_uv null) are emitted as null observations; no missing hand coordinates are estimated or fabricated.",
+    "This job reconstructs the single tracked 91-frame demo video (data/demo2/do_as_i_do_pick_place_preview.mp4); the DexYCB 3-requested/2-verified sequence limitation does not apply to this single-video reconstruction job.",
+    "No upstream JSON prerequisite exists for reconstruction (it consumes the provided video directly), so no upstream_bootstrap artifact was produced."
+  ],
+  "provenance": {
+    "module": "src.reflex_stages (aliased as persona.reflex_stages)",
+    "trajectory_input": "selected_camera_rgb",
+    "dexycb_gt_trajectory_input": false,
+    "depth_trajectory_input": false
+  }
+}

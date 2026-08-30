@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "job_id": "demo-91f-reflex",
+  "agent_name": "retargeting",
+  "role": "Retargeting Agent (robot-data-retargeting)",
+  "robot": "franka_emika_panda",
+  "task_type": "pick_and_place",
+  "generated_at": "2026-08-30T00:41:20.009643Z",
+  "input": {
+    "vision_json": {
+      "path": "reflex_live/demo-91f-reflex/upstream_bootstrap/vision.json",
+      "owner_role": "reconstruction (upstream bootstrap, NOT owned by retargeting)",
+      "sha256": "6734a34613bb986ceba36585cb9ea149150d61d3288bf72c165c34a485d865f2",
+      "size_bytes": 27779,
+      "frame_count": 91,
+      "source_video_tracked": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+      "right_hand_detections": 83,
+      "right_hand_coverage": 0.9121
+    },
+    "config_json": {
+      "path": "config/demo_config.json",
+      "sha256": "8a13994be1a2c8697ead2d927ad75a024b1222a06c0d0eee0e681acde79a5de6",
+      "size_bytes": 372,
+      "note": "Requested path 'dataminer/config/demo_config.json' is not tracked in this Devbox; used the tracked equivalent 'config/demo_config.json'."
+    }
+  },
+  "exact_command": "python -m src.reflex_stages retargeting --input reflex_live/demo-91f-reflex/upstream_bootstrap/vision.json --config config/demo_config.json --output reflex_live/demo-91f-reflex/retargeting/panda_trajectory.json --canonical-output reflex_live/demo-91f-reflex/retargeting/canonical_trajectory.json --grasp-frame 30 --release-frame 70 --job-id demo-91f-reflex",
+  "upstream_bootstrap": {
+    "owner_role": "reconstruction",
+    "reason": "No gate-passed reconstruction bundle (vision.json) was present in this isolated Devbox; regenerated the upstream prerequisite from the tracked 91-frame video per instructions.",
+    "command": "python -m src.reflex_stages reconstruction --input data/demo2/do_as_i_do_pick_place_preview.mp4 --output reflex_live/demo-91f-reflex/upstream_bootstrap/vision.json --job-id demo-91f-reflex",
+    "model": "models/hand_landmarker.task (tracked, not downloaded)",
+    "frame_count": 91,
+    "detection_coverage": "83/91 (91.2%)",
+    "runtime": "CPU (XNNPACK); GPU EGL unavailable in this Devbox",
+    "clearly_distinguished_from_owned_stage": true
+  },
+  "output": {
+    "panda_trajectory_json": {
+      "path": "reflex_live/demo-91f-reflex/retargeting/panda_trajectory.json",
+      "sha256": "3ad2925ebb23ca9d5528a9c12ac70d6bd65e1b0d7d30270467b9155852c4a376",
+      "size_bytes": 43632,
+      "frame_count": 91
+    },
+    "canonical_trajectory_json": {
+      "path": "reflex_live/demo-91f-reflex/retargeting/canonical_trajectory.json",
+      "sha256": "9362a815ab7b015fa9a014c2ee853a18238a0e683b2bef3f9e5c4f32c8353153",
+      "size_bytes": 17477,
+      "frame_count": 91
+    }
+  },
+  "measured_metrics": {
+    "input_frame_count": 91,
+    "output_frame_count": 91,
+    "canonical_frame_count": 91,
+    "frame_count_match": true,
+    "invalid_ik_frames": 0,
+    "invalid_ik_zero": true,
+    "max_ik_error": 0.004809898067994046,
+    "min_ik_error": 2.3261467141370853e-05,
+    "ik_tolerance": 0.005,
+    "joint_limit_source": "urdf_clipping",
+    "joint_limit_violations": 0,
+    "joint_limit_pass": true,
+    "gripper_width_range": [
+      0.0,
+      0.08
+    ],
+    "gripper_range_violations": 0,
+    "gripper_range_pass": true,
+    "grasp_frame": 30,
+    "release_frame": 70,
+    "phase_distribution": {
+      "approach": 30,
+      "grasp": 1,
+      "lift": 10,
+      "carry": 19,
+      "place": 10,
+      "release": 21
+    },
+    "gripper_widths_observed": [
+      0.025,
+      0.08
+    ],
+    "all_frames_valid": true
+  },
+  "gate": {
+    "required": "91 input frames, 91 output frames, invalid IK=0, joint limits pass",
+    "status": "passed",
+    "gate_passed": true,
+    "checks": {
+      "frame_count_match": true,
+      "invalid_ik_zero": true,
+      "joint_limit_pass": true,
+      "gripper_range_pass": true
+    }
+  },
+  "gate_passed": true,
+  "limitations": [
+    "Requested module 'persona.reflex_stages' is not a tracked package in this Devbox; ran the tracked implementation 'src.reflex_stages' (identical code). No 'persona' package was fabricated.",
+    "Requested config 'dataminer/config/demo_config.json' is not tracked; used the tracked calibration 'config/demo_config.json'. No file was fabricated or renamed.",
+    "Upstream vision.json was bootstrapped locally by running the reconstruction stage (MediaPipe Hand Landmarker on the tracked video) because no gate-passed reconstruction bundle existed in this isolated Devbox. It is owned by the reconstruction role, not retargeting, and should be re-validated via cross-Devbox handoff once implemented.",
+    "Cross-Devbox artifact handoff (SHA-verified bundle download/upload, role queue/router) is NOT implemented per reflex/agents/manifest.json. The SHA256 values recorded here are local content hashes for integrity, not cross-Devbox-verified handoffs.",
+    "No constraints.json was provided or tracked; the joint-limit gate fell back to URDF clipping (joint_limit_source='urdf_clipping'), independently re-verified against the Franka Panda URDF joint ranges (0 violations).",
+    "DexYCB was not downloaded. No nested Devbox was launched.",
+    "Physical Validation (next role) was NOT run by retargeting; task_success is NOT predicted here (requires actual MuJoCo physics rollout)."
+  ],
+  "secret_exposure": "none"
+}

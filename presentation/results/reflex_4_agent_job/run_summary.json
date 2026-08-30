@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "job_id": "demo-91f-reflex",
+  "executed_on": "Reflex Agent Sessions on dedicated Runloop Devboxes",
+  "source": {
+    "path": "data/demo2/do_as_i_do_pick_place_preview.mp4",
+    "sha256": "7ccb44d5e0115f61a401cc79466ed83703541ab9be65ace93d766fe9b58ff4d8",
+    "frames": 91,
+    "fps": 30,
+    "width": 720,
+    "height": 406
+  },
+  "robot": "franka_emika_panda",
+  "task": "mustard_bottle_pick_and_place",
+  "grasp_frame": 30,
+  "release_frame": 70,
+  "agents": [
+    {
+      "role": "reconstruction",
+      "agent_id": "agt_35oqb8Ykk56YROp4eDFQsh",
+      "devbox_id": "dbx_34Fp60gRXLf6zGmZpjOyo",
+      "turn_end_sequence": 18014,
+      "input": "source MP4",
+      "outputs": [
+        {
+          "path": "remote_artifacts/reconstruction/vision.json",
+          "sha256": "5205c24115d1adbf2bd7b538002ba68dc29fef3779ca70a37ad86af3836806e9"
+        },
+        {
+          "path": "remote_artifacts/reconstruction/reconstruction_report.json",
+          "sha256": "4c0e2895368f0367a6e57105a92a0e07a3f4aad022277214dbfcc869da31539f"
+        }
+      ],
+      "metrics": {
+        "frame_count": 91,
+        "right_hand_detected_frames": 83,
+        "right_hand_coverage": 0.912088,
+        "index_and_timestamp_valid": true
+      },
+      "gate_passed": true
+    },
+    {
+      "role": "retargeting",
+      "agent_id": "agt_2dxNkwPXFt98QlFWG0AnPj",
+      "devbox_id": "dbx_34Fp61K7AYs7SrmAm86eF",
+      "turn_end_sequence": 14393,
+      "input": "locally bootstrapped vision.json plus calibration config",
+      "outputs": [
+        {
+          "path": "remote_artifacts/retargeting/canonical_trajectory.json",
+          "sha256": "9362a815ab7b015fa9a014c2ee853a18238a0e683b2bef3f9e5c4f32c8353153"
+        },
+        {
+          "path": "remote_artifacts/retargeting/panda_trajectory.json",
+          "sha256": "3ad2925ebb23ca9d5528a9c12ac70d6bd65e1b0d7d30270467b9155852c4a376"
+        }
+      ],
+      "metrics": {
+        "input_frames": 91,
+        "output_frames": 91,
+        "invalid_ik_frames": 0,
+        "joint_limit_violations": 0,
+        "max_ik_error_m": 0.004809898067994046
+      },
+      "gate_passed": true
+    },
+    {
+      "role": "physical_validation",
+      "agent_id": "agt_5vvglwdDfNZ0VattM4CGFW",
+      "devbox_id": "dbx_34Fp62BjP8Bh3q2R4YY2o",
+      "turn_end_sequence": 10051,
+      "input": "locally bootstrapped Panda trajectory plus calibration config",
+      "outputs": [
+        {
+          "path": "remote_artifacts/physical_validation/physics_validation.json",
+          "sha256": "659793128cee7039be8723854326cabd85f85e86484b2721d6e3322c95f1a883"
+        },
+        {
+          "path": "remote_artifacts/physical_validation/physics_rollout.mp4",
+          "sha256": "9cc4aa510208484f8f6266a5f9dc06c63aa7bfca9b627fca5bcfc884bdfe255e",
+          "frames": 187,
+          "fps": 30
+        }
+      ],
+      "metrics": {
+        "task_success": true,
+        "collision_free": true,
+        "joint_limits_ok": true,
+        "smooth": true,
+        "target_distance_m": 0.00038293426980093065
+      },
+      "gate_passed": true
+    },
+    {
+      "role": "data_scaling",
+      "agent_id": "agt_04NQTlMSwiUmPsaZVVtm2m",
+      "devbox_id": "dbx_34Fp62vwBnFBrOBZ72zfn",
+      "turn_end_sequence": 7629,
+      "input": "locally bootstrapped and physics-validated Panda seed plus config",
+      "outputs": [
+        {
+          "path": "remote_artifacts/scaling/scaled_episodes.json",
+          "sha256": "7191195fa279dc5bf6d7e5b17208e35a64ecbedf6b2d975aee53f6c219ca181b"
+        }
+      ],
+      "metrics": {
+        "attempted": 5,
+        "accepted": 3,
+        "rejected": 2,
+        "pass_rate": 0.6,
+        "accepted_episode_provenance_complete": true
+      },
+      "gate_passed": true
+    }
+  ],
+  "all_gates_passed": true,
+  "cross_devbox_handoff_implemented": false,
+  "handoff_note": "Downstream agents regenerated prerequisites from the same source video inside their isolated Devboxes and separated bootstrap artifacts from owned outputs.",
+  "training_note": "This five-attempt scaling proof is separate from the 500-episode RunPod training run."
+}
