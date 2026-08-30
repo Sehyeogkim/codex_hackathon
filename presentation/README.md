@@ -14,3 +14,11 @@
 
 원본 DexYCB archive, 500-episode 학습 dataset, checkpoint, `.env`, artifact 디렉터리는
 포함하지 않는다. 방향키/Space로 이동하고 `N`은 발표자 노트, `F`는 전체화면이다.
+
+## 발표용 영상 3개
+
+재생 순서대로 [`video_demo/`](video_demo/)에 별도로 복사했다.
+
+1. `01_demo1_human_to_franka.mp4`: 사람 영상과 Franka 변환 결과
+2. `02_demo2_success_rollout.mp4`: held-out 성공 rollout
+3. `03_demo2_failure_rollout.mp4`: 같은 평가의 실패 rollout
