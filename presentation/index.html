@@ -244,11 +244,11 @@
       <h2>현재 어디까지 실제로 됐는가</h2>
       <div class="checklist">
         <div class="check"><div class="icon">✓</div><div><strong>Runloop 실제 E2E</strong><p>91프레임 변환 · MuJoCo 병 이동 · artifact 회수</p></div><span class="state done">완료</span></div>
-        <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>subject-07 12GB 다운로드 · RGB seed 2개 · Pod 자동 삭제 계약</p></div><span class="state done">82 TESTS</span></div>
-        <div class="check"><div class="icon">✓</div><div><strong>RunPod 데이터 생성</strong><p>물리 검증 episode 500 / 500 · 총 100,360 step</p></div><span class="state done">완료</span></div>
+        <div class="check"><div class="icon">✓</div><div><strong>Reflex 4-Agent 실제 실행</strong><p>전용 Devbox 4개 · Reconstruction→Scaling 모든 Gate 통과</p></div><span class="state done">4 AGENTS</span></div>
+        <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod 데이터 생성</strong><p>RGB seed 2개 · 물리 검증 episode 500 / 500 · 총 100,360 step</p></div><span class="state done">82 TESTS</span></div>
         <div class="check"><div class="icon">✓</div><div><strong>RunPod 최종 학습 / 20회 평가</strong><p>RTX 4090 · 300 epochs · held-out 12 / 20 성공</p></div><span class="state done">60%</span></div>
       </div>
-      <aside class="notes">모든 합격 기준을 실제 artifact로 확인했습니다. 최종 평가는 12/20이고 policy, summary, rollout 2개를 회수했으며 Pod 삭제도 확인했습니다.</aside>
+      <aside class="notes">네 Reflex Session과 Devbox를 실제 실행해 각 역할의 I/O와 SHA를 회수했습니다. 다만 cross-Devbox 자동 handoff는 아직 없어 후단 Agent가 동일 영상에서 upstream을 재생성했습니다. RunPod 최종 평가는 12/20이며 성공과 실패 rollout을 모두 공개합니다.</aside>
     </section>
 
     <section class="slide">
@@ -375,11 +375,11 @@
         <h2>What is actually working today?</h2>
         <div class="checklist">
           <div class="check"><div class="icon">✓</div><div><strong>Runloop end-to-end</strong><p>91-frame transform · MuJoCo bottle motion · artifact recovery</p></div><span class="state done">DONE</span></div>
-          <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>12GB subject-07 download · 2 RGB seeds · automatic Pod cleanup contract</p></div><span class="state done">82 TESTS</span></div>
-          <div class="check"><div class="icon">✓</div><div><strong>RunPod data generation</strong><p>500 / 500 physics-validated episodes · 100,360 steps</p></div><span class="state done">DONE</span></div>
+          <div class="check"><div class="icon">✓</div><div><strong>Actual Reflex 4-Agent run</strong><p>4 dedicated Devboxes · every gate from Reconstruction to Scaling passed</p></div><span class="state done">4 AGENTS</span></div>
+          <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod data generation</strong><p>2 RGB seeds · 500 / 500 physics-validated episodes · 100,360 steps</p></div><span class="state done">82 TESTS</span></div>
           <div class="check"><div class="icon">✓</div><div><strong>Final RunPod training / 20 trials</strong><p>RTX 4090 · 300 epochs · 12 / 20 held-out successes</p></div><span class="state done">60%</span></div>
         </div>
-        <aside class="notes">Every acceptance gate is backed by recovered artifacts: policy, summary, two rollouts, and a confirmed deleted Pod.</aside>`,
+        <aside class="notes">All four Reflex Sessions and Devboxes ran and produced role-specific I/O with hashes. Cross-Devbox automatic handoff is not implemented yet, so downstream agents regenerated prerequisites from the same video. The final RunPod evaluation is 12/20 and we show both a success and a failure.</aside>`,
         `<div class="eyebrow">08 · Business Model</div>
         <h2>Give us the robot and task.<br>We deliver <span class="green">trainable data.</span></h2>
         <div class="business">
