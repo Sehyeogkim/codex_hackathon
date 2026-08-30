@@ -35,6 +35,14 @@ subject-07. RGB-derived pickup segments are kept distinct from MuJoCo-generated
 carry/place/release segments. DexYCB pose and depth annotations are used only
 for selection and evaluation, not as trajectory inputs.
 
+The final RunPod run generated 500 validated episodes from 784 attempts
+(100,360 transitions), trained six 300-epoch candidates on an NVIDIA RTX 4090,
+selected seed 2 at `3e-4` with 65% validation success, and achieved **12/20
+successes (60%)** on a separate fixed-seed evaluation. The recovered summary and
+two unedited fixed-trial videos are in [`presentation/results/`](presentation/results/)
+and [`presentation/media/`](presentation/media/). Trial 00 is a failure and
+trial 01 is a success; the deck deliberately shows both.
+
 ## Repository map
 
 | Path | Purpose |
@@ -92,7 +100,8 @@ The runner prefers RTX 4090, then A40, then L4; verifies CUDA; downloads DexYCB
 inside the Pod; trains and evaluates the policy; recovers artifacts; and deletes
 the Pod in a `finally` block on both success and failure. A training run passes
 only with exactly 500 validated episodes and at least 10 successes in 20 held-out
-trials.
+trials. The final run passed with 12/20, and the Pod deletion was independently
+confirmed by a `404 pod not found` response after artifact recovery.
 
 ## Reflex and Runloop
 

@@ -6,7 +6,9 @@
 포함한 media는 HTML이 실제 참조하는 최소 파일뿐이다.
 
 - 압축 JPEG 3개: cover, workflow, sponsor stack
-- H.264 비교 클립 1개: 556KB, 6.23초
+- H.264 사람/로봇 비교 클립 1개: 556KB, 6.23초
+- H.264 held-out 정책 rollout 2개: 고정 trial 00 실패, trial 01 성공
+- `results/runpod_summary.json`: 전체 20회 평가와 provenance가 담긴 회수본
 
-원본 DexYCB archive, 학습 dataset, rollout 모음, `.env`, artifact 디렉터리는 포함하지
-않는다. 방향키/Space로 이동하고 `N`은 발표자 노트, `F`는 전체화면이다.
+원본 DexYCB archive, 500-episode 학습 dataset, checkpoint, `.env`, artifact 디렉터리는
+포함하지 않는다. 방향키/Space로 이동하고 `N`은 발표자 노트, `F`는 전체화면이다.

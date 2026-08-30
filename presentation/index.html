@@ -210,6 +210,22 @@
     </section>
 
     <section class="slide">
+      <div class="eyebrow">05B · Demo 2 · Held-out Rollout</div>
+      <h2>최종 평가 <span class="green">12 / 20 성공</span> · 합격</h2>
+      <div class="grid-2">
+        <div class="video-wrap"><span class="video-badge" style="background:var(--red);color:#28050c">TRIAL 00 · FAIL</span><video src="media/runpod_policy_trial_00.mp4" controls muted loop playsinline></video></div>
+        <div class="video-wrap"><span class="video-badge">TRIAL 01 · SUCCESS</span><video src="media/runpod_policy_trial_01.mp4" controls muted loop playsinline></video></div>
+      </div>
+      <div class="metric-row">
+        <div class="metric"><b>500</b><span>검증 episode</span></div>
+        <div class="metric"><b>100,360</b><span>학습 transition</span></div>
+        <div class="metric"><b>65%</b><span>선택 모델 validation</span></div>
+        <div class="metric"><b>60%</b><span>held-out 성공률</span></div>
+      </div>
+      <aside class="notes">성공 영상만 고르지 않았습니다. 고정 seed의 첫 두 trial을 실패와 성공 모두 그대로 보여주며, 전체 20회 중 12회 성공했습니다.</aside>
+    </section>
+
+    <section class="slide">
       <div class="eyebrow">06 · Infrastructure</div>
       <h2>각 제품은 한 가지 역할만 맡습니다.</h2>
       <div class="arch">
@@ -228,11 +244,11 @@
       <h2>현재 어디까지 실제로 됐는가</h2>
       <div class="checklist">
         <div class="check"><div class="icon">✓</div><div><strong>Runloop 실제 E2E</strong><p>91프레임 변환 · MuJoCo 병 이동 · artifact 회수</p></div><span class="state done">완료</span></div>
-        <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>subject-07 12GB 다운로드 · RGB seed 2개 · Pod 자동 삭제 계약</p></div><span class="state done">80 TESTS</span></div>
+        <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>subject-07 12GB 다운로드 · RGB seed 2개 · Pod 자동 삭제 계약</p></div><span class="state done">82 TESTS</span></div>
         <div class="check"><div class="icon">✓</div><div><strong>RunPod 데이터 생성</strong><p>물리 검증 episode 500 / 500 · 총 100,360 step</p></div><span class="state done">완료</span></div>
-        <div class="check"><div class="icon">○</div><div><strong>RunPod 최종 학습 / 20회 평가</strong><p>RTX 4090에서 phase-conditioned BC 실행 중</p></div><span class="state pending">실행 중</span></div>
+        <div class="check"><div class="icon">✓</div><div><strong>RunPod 최종 학습 / 20회 평가</strong><p>RTX 4090 · 300 epochs · held-out 12 / 20 성공</p></div><span class="state done">60%</span></div>
       </div>
-      <aside class="notes">이 슬라이드는 신뢰를 위한 것입니다. 500개 데이터 생성까지 완료했지만, 20회 최종 평가가 끝나기 전에는 학습 성공률을 주장하지 않습니다.</aside>
+      <aside class="notes">모든 합격 기준을 실제 artifact로 확인했습니다. 최종 평가는 12/20이고 policy, summary, rollout 2개를 회수했으며 Pod 삭제도 확인했습니다.</aside>
     </section>
 
     <section class="slide">
@@ -331,6 +347,19 @@
         </div>
         <div class="honesty">Final acceptance: succeed in <strong>at least 10 of 20</strong> held-out environments. We do not cherry-pick successful rollouts.</div>
         <aside class="notes">Absolute joint targets and per-step inference reduce accumulated error from delta actions.</aside>`,
+        `<div class="eyebrow">05B · Demo 2 · Held-out Rollout</div>
+        <h2>Final evaluation: <span class="green">12 / 20 successes</span> · passed</h2>
+        <div class="grid-2">
+          <div class="video-wrap"><span class="video-badge" style="background:var(--red);color:#28050c">TRIAL 00 · FAIL</span><video src="media/runpod_policy_trial_00.mp4" controls muted loop playsinline></video></div>
+          <div class="video-wrap"><span class="video-badge">TRIAL 01 · SUCCESS</span><video src="media/runpod_policy_trial_01.mp4" controls muted loop playsinline></video></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric"><b>500</b><span>validated episodes</span></div>
+          <div class="metric"><b>100,360</b><span>training transitions</span></div>
+          <div class="metric"><b>65%</b><span>selected validation</span></div>
+          <div class="metric"><b>60%</b><span>held-out success</span></div>
+        </div>
+        <aside class="notes">We do not show only successful runs. These are fixed trials 00 and 01—one failure and one success—and the full held-out score is 12 of 20.</aside>`,
         `<div class="eyebrow">06 · Infrastructure</div>
         <h2>Each product owns one clear role.</h2>
         <div class="arch">
@@ -346,11 +375,11 @@
         <h2>What is actually working today?</h2>
         <div class="checklist">
           <div class="check"><div class="icon">✓</div><div><strong>Runloop end-to-end</strong><p>91-frame transform · MuJoCo bottle motion · artifact recovery</p></div><span class="state done">DONE</span></div>
-          <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>12GB subject-07 download · 2 RGB seeds · automatic Pod cleanup contract</p></div><span class="state done">80 TESTS</span></div>
+          <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>12GB subject-07 download · 2 RGB seeds · automatic Pod cleanup contract</p></div><span class="state done">82 TESTS</span></div>
           <div class="check"><div class="icon">✓</div><div><strong>RunPod data generation</strong><p>500 / 500 physics-validated episodes · 100,360 steps</p></div><span class="state done">DONE</span></div>
-          <div class="check"><div class="icon">○</div><div><strong>Final RunPod training / 20 trials</strong><p>Phase-conditioned BC is running on an RTX 4090</p></div><span class="state pending">RUNNING</span></div>
+          <div class="check"><div class="icon">✓</div><div><strong>Final RunPod training / 20 trials</strong><p>RTX 4090 · 300 epochs · 12 / 20 held-out successes</p></div><span class="state done">60%</span></div>
         </div>
-        <aside class="notes">The 500-episode dataset is complete, but we do not claim final policy performance until the held-out 20-trial evaluation finishes.</aside>`,
+        <aside class="notes">Every acceptance gate is backed by recovered artifacts: policy, summary, two rollouts, and a confirmed deleted Pod.</aside>`,
         `<div class="eyebrow">08 · Business Model</div>
         <h2>Give us the robot and task.<br>We deliver <span class="green">trainable data.</span></h2>
         <div class="business">

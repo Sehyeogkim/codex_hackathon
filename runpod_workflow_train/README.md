@@ -41,6 +41,19 @@ GPU preference is RTX 4090, then A40, then L4. The request uses one GPU, a
 only when all acceptance gates pass, including CUDA metadata, 500 validated
 episodes, at least 10 successes in 20 held-out trials, and two rollout videos.
 
+The remote command exports `MUJOCO_GL=egl` and `PYOPENGL_PLATFORM=egl` before
+MuJoCo is imported. If infrastructure fails after the checkpoint is saved, the
+held-out evaluation can be resumed without retraining:
+
+```bash
+MUJOCO_GL=egl PYOPENGL_PLATFORM=egl python -m runpod_workflow_train.resume_evaluation \
+  --checkpoint /workspace/output/policy.pt \
+  --out /workspace/output \
+  --training-log /workspace/output/training.log \
+  --seed-dir /workspace/output/dexycb/seeds \
+  --trials 20
+```
+
 ## Package layout
 
 - `runner.py`: RunPod REST API, SSH/SCP transport, archive and artifact gates.
@@ -63,5 +76,6 @@ duplicated inside this package.
 python -m unittest \
   tests.test_runpod_training_runner \
   tests.test_runpod_dexycb_runner \
-  tests.test_demo2_train_policy -v
+  tests.test_demo2_train_policy \
+  tests.test_resume_evaluation -v
 ```

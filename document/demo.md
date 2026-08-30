@@ -162,10 +162,13 @@ Pod는 RTX 4090 → A40 → L4 순서로 요청하며, 성공·실패 모두 `fi
 
 - 로컬: 91/91 IK, 손 검출률 93.4%, `task_success=true`, 목표 거리 0.29mm
 - Runloop 실제 Devbox: 91/91 IK, `task_success=true`, 충돌 없음, 목표 거리 0.38mm
-- 테스트: 80개 통과
+- 테스트: 82개 통과
 - RunPod: subject-07 sequence 3개 요청 중 2개를 검증·선택했고, 물리 검증
-  episode 500개(총 100,360 step)를 생성했다. 실제 학습 성공은 회수된
-  summary/checkpoint와 분리된 20회 평가가 있을 때만 주장한다.
+  episode 500개(총 100,360 step)를 생성했다. RTX 4090에서 300 epoch 후보
+  6개를 학습해 validation 65%인 seed 2, lr 3e-4 모델을 선택했고, 분리된
+  고정 seed 20회 평가에서 12회 성공(60%)해 10/20 기준을 통과했다.
+- 회수: `policy.pt`, `summary.json`, provenance, rollout MP4 2개를 로컬에
+  저장했고 RunPod Pod 삭제 후 API 404를 확인했다.
 
 ## 핵심 메시지
 

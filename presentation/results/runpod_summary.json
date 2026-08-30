@@ -1,0 +1,131 @@
+{
+  "validation_candidates": [
+    {
+      "seed": 0,
+      "learning_rate": 0.001,
+      "validation_success_rate": 0.4
+    },
+    {
+      "seed": 0,
+      "learning_rate": 0.0003,
+      "validation_success_rate": 0.55
+    },
+    {
+      "seed": 1,
+      "learning_rate": 0.0003,
+      "validation_success_rate": 0.55
+    },
+    {
+      "seed": 1,
+      "learning_rate": 0.001,
+      "validation_success_rate": 0.2
+    },
+    {
+      "seed": 2,
+      "learning_rate": 0.0003,
+      "validation_success_rate": 0.65
+    },
+    {
+      "seed": 2,
+      "learning_rate": 0.001,
+      "validation_success_rate": 0.3
+    }
+  ],
+  "selected_candidate": {
+    "seed": 2,
+    "learning_rate": 0.0003,
+    "validation_success_rate": 0.65
+  },
+  "episodes_validated": 500,
+  "episodes_attempted": 784,
+  "generation_seconds": 251,
+  "sources": [
+    "/workspace/dexycb-prepared/20200928-subject-07_20200928_144226/hybrid_trajectory.json",
+    "/workspace/dexycb-prepared/20200928-subject-07_20200928_144300/hybrid_trajectory.json"
+  ],
+  "source_provenance": [
+    {
+      "seed_file": "/workspace/output/dexycb/seeds/seed_000.json",
+      "dataset": "DexYCB",
+      "license": "CC BY-NC 4.0",
+      "subject": "20200928-subject-07",
+      "sequence_id": "20200928_144226",
+      "camera_serial": "932122062010",
+      "trajectory_input": "selected_camera_rgb",
+      "ground_truth_usage": "selection_and_evaluation_only",
+      "dexycb_gt_trajectory_input": false,
+      "segments": [
+        {
+          "id": "human_segment",
+          "kind": "rgb_derived_human_pickup",
+          "start_frame": 0,
+          "end_frame": 73
+        },
+        {
+          "id": "generated_segment",
+          "kind": "generated_carry_place_release",
+          "start_frame": 74,
+          "end_frame": 94
+        }
+      ]
+    },
+    {
+      "seed_file": "/workspace/output/dexycb/seeds/seed_001.json",
+      "dataset": "DexYCB",
+      "license": "CC BY-NC 4.0",
+      "subject": "20200928-subject-07",
+      "sequence_id": "20200928_144300",
+      "camera_serial": "932122060861",
+      "trajectory_input": "selected_camera_rgb",
+      "ground_truth_usage": "selection_and_evaluation_only",
+      "dexycb_gt_trajectory_input": false,
+      "segments": [
+        {
+          "id": "human_segment",
+          "kind": "rgb_derived_human_pickup",
+          "start_frame": 0,
+          "end_frame": 73
+        },
+        {
+          "id": "generated_segment",
+          "kind": "generated_carry_place_release",
+          "start_frame": 74,
+          "end_frame": 94
+        }
+      ]
+    }
+  ],
+  "training_transitions": 100360,
+  "epochs": 300,
+  "cuda_available": true,
+  "gpu_name": "NVIDIA GeForce RTX 4090",
+  "eval_trials": 20,
+  "eval_success_rate": 0.6,
+  "eval_results": [
+    false,
+    true,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    true,
+    true
+  ],
+  "videos": [
+    "/workspace/output/policy_trial_00.mp4",
+    "/workspace/output/policy_trial_01.mp4"
+  ],
+  "accepted": true
+}
