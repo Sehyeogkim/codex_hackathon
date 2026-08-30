@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from src import retarget
+from dataminer import retarget
 
 
 def make_config() -> dict:

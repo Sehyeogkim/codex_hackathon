@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from src.reflex_stages import (
+from persona.reflex_stages import (
     StageDependencies,
     run_reconstruction,
     run_retargeting,

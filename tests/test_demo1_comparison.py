@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.make_demo1_comparison import status_overlay
+from dataminer.tools.comparison import status_overlay
 
 
 class Demo1ComparisonTests(unittest.TestCase):

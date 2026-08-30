@@ -5,7 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src import dexycb_pipeline, runpod_dexycb_runner
+from dataminer import dexycb_pipeline
+from runpod_workflow_train import dexycb_prepare
 
 
 class RunPodDexYCBRunnerTests(unittest.TestCase):
@@ -14,7 +15,7 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
             root = Path(temp_name)
             subject = root / "wrapper" / "dataset" / "20200709-subject-07"
             subject.mkdir(parents=True)
-            found = runpod_dexycb_runner.find_dataset_root(root)
+            found = dexycb_prepare.find_dataset_root(root)
         self.assertEqual(found, subject.parent.resolve())
 
     def test_prepares_two_hybrids_and_auditable_stage(self) -> None:
@@ -91,7 +92,7 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
                 )
                 return manifest
 
-            stage = runpod_dexycb_runner.prepare_dexycb_hybrids(
+            stage = dexycb_prepare.prepare_dexycb_hybrids(
                 root,
                 output,
                 config,
@@ -123,7 +124,7 @@ class RunPodDexYCBRunnerTests(unittest.TestCase):
                 raise RuntimeError("preparation failed")
 
             with self.assertRaisesRegex(RuntimeError, "preparation failed"):
-                runpod_dexycb_runner.prepare_dexycb_hybrids(
+                dexycb_prepare.prepare_dexycb_hybrids(
                     root, output, config, prepare_fn=fail
                 )
             stage = json.loads(

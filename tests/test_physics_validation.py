@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.physics_validation import validate_physics
+from dataminer.physics_validation import validate_physics
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,7 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 class PhysicsValidationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.config = json.loads((ROOT / "config/demo_config.json").read_text())
+        cls.config = json.loads(
+            (ROOT / "dataminer/config/demo_config.json").read_text()
+        )
         cls.canonical = {
             "frames": [
                 {

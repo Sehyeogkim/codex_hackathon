@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.robot_data_job import JobDependencies, run_job
+from dataminer.pipeline import JobDependencies, run_job
 
 
 def demo_config() -> dict:

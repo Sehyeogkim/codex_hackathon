@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.product_runloop import run_product_request_on_runloop
+from dataminer.product_runloop import run_product_request_on_runloop
 
 
 class ProductRunloopTests(unittest.TestCase):

@@ -10,7 +10,7 @@ from unittest import mock
 import cv2
 import numpy as np
 
-from src import dexycb_pipeline
+from dataminer import dexycb_pipeline
 
 
 def _make_sequence(

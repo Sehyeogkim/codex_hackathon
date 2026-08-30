@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src import runloop_runner
+from dataminer import runloop_runner
 
 
 class _Result:
@@ -25,7 +25,7 @@ class _Command:
     def exec(self, command: str, **_: object) -> _Result:
         self.commands.append(command)
         stdout = _.get("stdout")
-        if callable(stdout) and "src.robot_data_job" in command:
+        if callable(stdout) and "dataminer.pipeline" in command:
             stdout('{"event":"stage.completed","stage":"vision"}\n')
         return _Result()
 
@@ -99,6 +99,43 @@ def _output_archive() -> bytes:
 
 
 class RunloopRunnerTests(unittest.TestCase):
+    def test_runtime_archive_uses_only_dataminer_contract_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_name:
+            temp = Path(temp_name)
+            project = temp / "project"
+            (project / "dataminer/config").mkdir(parents=True)
+            (project / "dataminer/__init__.py").write_text("", encoding="utf-8")
+            (project / "dataminer/config/demo_config.json").write_text(
+                "{}", encoding="utf-8"
+            )
+            (project / "dataminer/requirements.txt").write_text(
+                "numpy==1.26.4\n", encoding="utf-8"
+            )
+            (project / "data/resources/franka_emika_panda").mkdir(parents=True)
+            (project / "data/resources/franka_emika_panda/scene.xml").write_text(
+                "<mujoco/>", encoding="utf-8"
+            )
+            (project / "data/resources/hand_landmarker.task").write_bytes(b"model")
+            video = temp / "input.mp4"
+            video.write_bytes(b"video")
+            config = project / "dataminer/config/demo_config.json"
+            archive_path = temp / "runtime.tar.gz"
+
+            runloop_runner.build_runtime_archive(
+                video, config, archive_path, project_root=project
+            )
+            with tarfile.open(archive_path, "r:gz") as archive:
+                names = set(archive.getnames())
+
+        self.assertIn("dataminer/config/demo_config.json", names)
+        self.assertIn("dataminer/requirements.txt", names)
+        self.assertIn("data/resources/hand_landmarker.task", names)
+        self.assertIn("data/resources/franka_emika_panda/scene.xml", names)
+        self.assertFalse(any(name == "config" or name.startswith("config/") for name in names))
+        self.assertNotIn("requirements-runloop.txt", names)
+        self.assertFalse(any(name == "src" or name.startswith("src/") for name in names))
+        self.assertFalse(any(name == "mimic" or name.startswith("mimic/") for name in names))
+
     def test_commands_include_manual_event_overrides(self) -> None:
         commands = runloop_runner.remote_commands(grasp_frame=30, release_frame=70)
         self.assertIn("--grasp-frame 30", commands[2])

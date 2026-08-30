@@ -4,7 +4,14 @@ import unittest
 
 import numpy as np
 
-from mimic.bc import ACT_DIM, OBS_DIM, PHASE_COUNT, build_arrays, make_obs, phase_at
+from dataminer.simulation.bc import (
+    ACT_DIM,
+    OBS_DIM,
+    PHASE_COUNT,
+    build_arrays,
+    make_obs,
+    phase_at,
+)
 
 
 class _Episode:

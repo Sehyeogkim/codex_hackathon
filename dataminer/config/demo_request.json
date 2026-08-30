@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "robot": "franka_emika_panda",
+  "task_type": "pick_and_place",
+  "input_video": "../../data/demo2/do_as_i_do_pick_place_preview.mp4",
+  "calibration_config": "demo_config.json",
+  "grasp_frame": 30,
+  "release_frame": 70,
+  "render": true
+}

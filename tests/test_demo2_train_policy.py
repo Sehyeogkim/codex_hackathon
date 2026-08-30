@@ -5,10 +5,10 @@ from unittest import mock
 
 import numpy as np
 
-from mimic.augment import AugmentResult
-from mimic.config import DemoConfig
-from mimic.sim import SceneConfig
-from scripts import demo2_train_policy
+from runpod_workflow_train import train_policy
+from runpod_workflow_train.mimic.augment import AugmentResult
+from runpod_workflow_train.mimic.config import DemoConfig
+from runpod_workflow_train.mimic.sim import SceneConfig
 
 
 class Demo2TrainingTests(unittest.TestCase):
@@ -18,7 +18,7 @@ class Demo2TrainingTests(unittest.TestCase):
         trajectory = np.zeros((30, 8), np.float32)
         trajectory[:, 7] = 1.0
         trajectory[8:22, 7] = 0.0
-        compiled = demo2_train_policy.compile_object_centric_seed(
+        compiled = train_policy.compile_object_centric_seed(
             trajectory, scene, demo
         )
         closed = compiled[:, 7] < 0.5
@@ -35,8 +35,8 @@ class Demo2TrainingTests(unittest.TestCase):
             n_attempted=7,
             seconds=0.1,
         )
-        with mock.patch.object(demo2_train_policy, "augment", return_value=partial):
-            result, sources = demo2_train_policy.generate_validated(
+        with mock.patch.object(train_policy, "augment", return_value=partial):
+            result, sources = train_policy.generate_validated(
                 [np.zeros((2, 8)), np.zeros((2, 8))],
                 ["seed-a", "seed-b"],
                 mock.Mock(),

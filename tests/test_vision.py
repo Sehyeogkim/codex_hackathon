@@ -9,10 +9,10 @@ from types import SimpleNamespace
 import cv2
 import numpy as np
 
-from src import vision
+from dataminer import vision
 
 
-MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "hand_landmarker.task"
+MODEL_PATH = vision.DEFAULT_MODEL_PATH
 
 
 class VisionUnitTests(unittest.TestCase):

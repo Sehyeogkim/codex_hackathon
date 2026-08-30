@@ -26,20 +26,20 @@
 대용량 원본은 Git 저장소에 포함하지 않는다.
 
 ```bash
-scripts/download_dexycb.sh /workspace/dexycb
+runpod_workflow_train/download_dexycb.sh /workspace/dexycb
 tar -xzf /workspace/dexycb/subject-07.tar.gz -C /workspace/dexycb
-python -m src.dexycb_pipeline /workspace/dexycb \
+python -m dataminer.dexycb_pipeline /workspace/dexycb \
   --output-dir /workspace/dexycb-prepared --limit 3
 ```
 
-`src.dexycb_pipeline` 은 각 카메라의 JPEG을 MP4로 변환하고 MediaPipe
+`dataminer.dexycb_pipeline` 은 각 카메라의 JPEG을 MP4로 변환하고 MediaPipe
 오른손 검출 coverage가 가장 높은 시점을 선택한다. 라이브러리
 API에 `trajectory_callback`을 주거나 기본 CLI를 실행하면 RGB로 추출한
 human pickup과 생성한 carry/place/release를 합친 `hybrid_trajectory.json`도
 저장한다. 각 프레임은
 `human_segment` 또는 `generated_segment`로 표시된다.
 
-기본 CLI의 pickup은 MediaPipe palm/pinch와 `config/demo_config.json` homography만
+기본 CLI의 pickup은 MediaPipe palm/pinch와 `dataminer/config/demo_config.json` homography만
 사용한다. 오른손 coverage 70% 미만이거나 pinch가 3프레임 연속으로
 임계값을 통과하지 않으면 실패한다. 필요하면 `--grasp-frame`으로 RGB
 프레임을 지정할 수 있다. `--camera-only`는 카메라 선택만 실행하는 진단용

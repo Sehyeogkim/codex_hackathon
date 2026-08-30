@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import io
 import json
+import shutil
 import tarfile
 import tempfile
 import unittest
 import urllib.error
 from pathlib import Path
 
-from src import runpod_training_runner as runner
+from runpod_workflow_train import runner
 
 
 def _write_request(directory: Path, **overrides: object) -> Path:
@@ -50,13 +51,13 @@ def _write_cloud_request(directory: Path, **overrides: object) -> Path:
 def _make_project(directory: Path) -> Path:
     project = directory / "project"
     for relative in runner.RUNTIME_PATHS:
+        source = runner.PROJECT_ROOT / relative
         path = project / relative
-        if Path(relative).suffix:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text("placeholder", encoding="utf-8")
+        if source.is_dir():
+            shutil.copytree(source, path)
         else:
-            path.mkdir(parents=True, exist_ok=True)
-            (path / "placeholder").write_text("x", encoding="utf-8")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, path)
     return project
 
 
@@ -186,7 +187,7 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
             with tarfile.open(archive, "r:gz") as tar:
                 names = tar.getnames()
                 public = json.load(tar.extractfile("job/training_request.json"))
-        self.assertIn("mimic", names)
+        self.assertIn("runpod_workflow_train/mimic", names)
         self.assertIn("job/seeds/000.json", names)
         self.assertEqual(len(public["seed_trajectories"]), 3)
         self.assertNotIn("api_key", json.dumps(public).lower())
@@ -213,12 +214,12 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
             )
         command = runner.remote_training_command(request)
         self.assertIn("apt-get install -y -qq libegl1 libgles2 libgl1", command)
-        self.assertIn("scripts/download_dexycb.sh", command)
+        self.assertIn("runpod_workflow_train/download_dexycb.sh", command)
         self.assertIn(
             "tar --no-same-owner -xzf /workspace/dexycb/subject-07.tar.gz",
             command,
         )
-        self.assertIn("python -m src.runpod_dexycb_runner", command)
+        self.assertIn("python -m runpod_workflow_train.dexycb_prepare", command)
         self.assertIn("mapfile -t seeds", command)
         self.assertIn('trajectory_args+=(--trajectory-json "$seed_path")', command)
         self.assertIn("dexycb_download.json", command)
@@ -236,7 +237,11 @@ class RunPodTrainingRunnerTests(unittest.TestCase):
                 names = tar.getnames()
         self.assertTrue(public["prepare_dexycb_on_pod"])
         self.assertEqual(public["seed_trajectories"], [])
-        self.assertIn("scripts/download_dexycb.sh", names)
+        self.assertIn("runpod_workflow_train/download_dexycb.sh", names)
+        self.assertIn("data/resources/franka_emika_panda/panda.xml", names)
+        self.assertIn("data/resources/hand_landmarker.task", names)
+        self.assertFalse(any(name.startswith("vendor/") for name in names))
+        self.assertFalse(any(name.startswith("models/") for name in names))
         self.assertFalse(any(name.endswith("subject-07.tar.gz") for name in names))
 
     def test_dry_run_needs_no_seed_files_or_api_key(self) -> None:

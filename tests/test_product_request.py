@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.product_request import run_product_request, validate_request
+from dataminer.product_request import run_product_request, validate_request
 
 
 def request_payload(**overrides: object) -> dict:

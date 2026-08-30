@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dataminer — Human Video → Robot Training Data</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --panel: #101827;
+      --panel-2: #172133;
+      --line: rgba(255,255,255,.12);
+      --text: #f5f7fb;
+      --muted: #9eabc0;
+      --cyan: #67e8f9;
+      --green: #6ee7a8;
+      --orange: #ffb86b;
+      --red: #fb7185;
+      --violet: #b9a5ff;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+    body {
+      color: var(--text);
+      font-family: Inter, Pretendard, "Noto Sans KR", system-ui, -apple-system, sans-serif;
+      letter-spacing: -.02em;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(103,232,249,.10), transparent 27%),
+        radial-gradient(circle at 85% 78%, rgba(185,165,255,.09), transparent 30%),
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: auto, auto, 44px 44px, 44px 44px;
+    }
+    .deck { width: 100%; height: 100%; position: relative; }
+    .slide {
+      position: absolute; inset: 0; padding: clamp(32px, 5vw, 80px);
+      display: grid; align-content: center; opacity: 0; visibility: hidden;
+      transform: translateX(42px); transition: opacity .28s ease, transform .28s ease;
+    }
+    .slide.active { opacity: 1; visibility: visible; transform: translateX(0); }
+    .slide.before { transform: translateX(-42px); }
+    .eyebrow { color: var(--cyan); font-size: clamp(12px, 1.15vw, 18px); font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .brand-name { display: inline-block; margin-right: 10px; color: var(--text); font-weight: 950; letter-spacing: .12em; }
+    h1 { font-size: clamp(48px, 7.1vw, 112px); line-height: .97; margin: 18px 0 22px; max-width: 1100px; }
+    h2 { font-size: clamp(34px, 4.3vw, 72px); line-height: 1.03; margin: 14px 0 28px; }
+    h3 { margin: 0 0 10px; font-size: clamp(18px, 1.8vw, 28px); }
+    p { color: var(--muted); font-size: clamp(17px, 1.45vw, 24px); line-height: 1.55; margin: 0; }
+    strong { color: var(--text); }
+    .accent { color: var(--cyan); }
+    .green { color: var(--green); }
+    .orange { color: var(--orange); }
+    .red { color: var(--red); }
+    .violet { color: var(--violet); }
+    .title-sub { max-width: 820px; font-size: clamp(16px, 1.25vw, 21px); }
+    .title-meta { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; }
+    .pill { border: 1px solid var(--line); background: rgba(255,255,255,.04); border-radius: 999px; padding: 9px 15px; color: #d8deea; font-weight: 700; font-size: 14px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; align-items: stretch; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+    .card { background: linear-gradient(145deg, rgba(23,33,51,.95), rgba(12,18,30,.95)); border: 1px solid var(--line); border-radius: 22px; padding: clamp(20px, 2.2vw, 34px); }
+    .card .num { display: block; color: var(--cyan); font-weight: 900; font-size: clamp(36px, 4.5vw, 72px); line-height: 1; margin-bottom: 12px; }
+    .card p { font-size: clamp(15px, 1.25vw, 20px); }
+    .problem { border-left: 3px solid var(--red); }
+    .solution { border-left: 3px solid var(--green); }
+    .pipeline { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); align-items: center; gap: 8px; }
+    .step { min-height: 108px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.035); padding: 17px 12px; display: grid; place-items: center; text-align: center; font-weight: 800; font-size: clamp(12px, 1.05vw, 17px); line-height: 1.32; }
+    .arrow { color: var(--cyan); text-align: center; font-weight: 900; }
+    .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; margin-top: 20px; }
+    .metric { background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 16px; padding: 15px; }
+    .metric b { display: block; font-size: clamp(22px, 2.6vw, 42px); color: var(--green); }
+    .metric span { color: var(--muted); font-size: 13px; }
+    .video-wrap { position: relative; height: clamp(250px, 44vh, 350px); overflow: hidden; border-radius: 18px; border: 1px solid var(--line); background: #000; }
+    video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+    .video-badge { position: absolute; top: 12px; right: 12px; z-index: 2; padding: 7px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; color: #062011; background: var(--green); }
+    .workflow-slide { padding: 24px 34px 40px; }
+    .workflow-image { width: 100%; max-height: calc(100vh - 64px); object-fit: contain; border-radius: 22px; border: 1px solid rgba(103,232,249,.28); box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+    .flow { display: grid; gap: 14px; }
+    .flow-row { display: grid; grid-template-columns: 185px 1fr 130px; gap: 14px; align-items: center; }
+    .flow-row > div { border: 1px solid var(--line); background: rgba(255,255,255,.035); border-radius: 14px; padding: 15px 17px; }
+    .flow-row .role { color: var(--cyan); font-weight: 900; }
+    .flow-row .status { text-align: center; font-weight: 900; color: var(--green); }
+    .arch { display: grid; grid-template-columns: 1fr 70px 1.25fr 70px 1fr; align-items: center; gap: 12px; }
+    .arch-box { border: 1px solid var(--line); border-radius: 20px; padding: 25px; text-align: center; background: rgba(255,255,255,.035); }
+    .arch-box big { display: block; color: var(--cyan); font-size: clamp(24px, 3vw, 46px); font-weight: 900; }
+    .arch-arrow { font-size: 34px; text-align: center; color: var(--violet); }
+    .checklist { display: grid; gap: 12px; }
+    .check { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 15px 18px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.03); }
+    .check .icon { font-size: 20px; }
+    .check .state { font-size: 13px; font-weight: 900; padding: 7px 10px; border-radius: 999px; }
+    .done { color: var(--green); background: rgba(110,231,168,.12); }
+    .pending { color: var(--orange); background: rgba(255,184,107,.12); }
+    .honesty { margin-top: 18px; padding: 14px 18px; border-radius: 12px; background: rgba(255,184,107,.09); border: 1px solid rgba(255,184,107,.26); color: #ffd7a6; font-size: clamp(14px, 1.15vw, 18px); }
+    .model { display: grid; grid-template-columns: 1fr 70px 1fr 70px 1fr; align-items: center; gap: 10px; }
+    .model .block { min-height: 190px; display: grid; align-content: center; text-align: center; border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.035); padding: 22px; }
+    .model b { font-size: clamp(24px, 3vw, 46px); color: var(--cyan); }
+    .model small { color: var(--muted); line-height: 1.5; }
+    .quote { font-size: clamp(32px, 4.5vw, 74px); line-height: 1.16; max-width: 1200px; font-weight: 900; }
+    .business { display: grid; grid-template-columns: 1fr 86px 1fr 86px 1fr; align-items: center; gap: 10px; }
+    .business .card { min-height: 240px; display: grid; align-content: center; }
+    .business .arrow-lg { text-align: center; font-size: 40px; color: var(--cyan); }
+    .footer { position: fixed; left: 28px; bottom: 20px; color: #68758b; font-size: 12px; z-index: 10; }
+    .lang-link { margin-left: 10px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--cyan); text-decoration: none; font-weight: 900; }
+    .counter { position: fixed; right: 28px; bottom: 18px; color: #92a0b7; font: 700 13px ui-monospace, monospace; z-index: 10; }
+    .progress { position: fixed; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,.05); z-index: 12; }
+    .progress > div { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--violet)); transition: width .25s ease; }
+    .hint { position: fixed; top: 18px; right: 24px; color: #65738a; font-size: 12px; z-index: 10; }
+    .notes { display: none; position: fixed; left: 5vw; right: 5vw; bottom: 48px; z-index: 20; padding: 16px 20px; border: 1px solid rgba(103,232,249,.35); background: rgba(7,11,20,.94); border-radius: 14px; color: #d8e6f4; line-height: 1.55; box-shadow: 0 18px 60px rgba(0,0,0,.45); }
+    body.show-notes .slide.active .notes { display: block; }
+    .robot-cutout { width: min(42vw, 570px); max-height: 63vh; object-fit: contain; border-radius: 26px; border: 1px solid var(--line); background: #fff; filter: drop-shadow(0 32px 48px rgba(0,0,0,.55)); justify-self: end; }
+    .title-layout { display: grid; grid-template-columns: 1.25fr .75fr; gap: 28px; align-items: center; }
+    @media (max-width: 900px) {
+      .slide { padding: 28px; overflow: auto; }
+      .grid-2, .grid-3, .title-layout { grid-template-columns: 1fr; }
+      .pipeline { grid-template-columns: 1fr; }
+      .arrow, .arch-arrow, .business .arrow-lg { transform: rotate(90deg); }
+      .arch, .model, .business { grid-template-columns: 1fr; }
+      .metric-row { grid-template-columns: repeat(2,1fr); }
+      .flow-row { grid-template-columns: 1fr; }
+      .robot-cutout { display: none; }
+    }
+    @media print {
+      html, body { overflow: visible; background: #fff; color: #000; }
+      .slide { position: relative; opacity: 1; visibility: visible; transform: none; width: 100vw; height: 56.25vw; page-break-after: always; background: var(--bg); color: var(--text); }
+      .footer, .counter, .progress, .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <section class="slide active workflow-slide">
+      <img class="workflow-image" src="media/cover-pierr.jpg" alt="Dataminer PIERR cover: human video to robot data" />
+      <aside class="notes">오프닝: PIERR는 사람의 물리적 상호작용을 추출하고 선택한 로봇에 리타게팅해 검증된 학습 데이터로 변환합니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">01 · Problem</div>
+      <h2>로봇 학습 데이터는<br><span class="red">비싸고, 느리고, 로봇마다 다릅니다.</span></h2>
+      <div class="grid-3">
+        <div class="card problem"><span class="num">01</span><h3>Teleoperation</h3><p>숙련 작업자가 실제 로봇을 반복 조종해야 합니다.</p></div>
+        <div class="card problem"><span class="num">02</span><h3>Robot-specific</h3><p>같은 태스크도 로봇 관절과 제약이 달라 재사용이 어렵습니다.</p></div>
+        <div class="card problem"><span class="num">03</span><h3>Scale</h3><p>수백·수천 episode를 모으는 순간 비용이 폭증합니다.</p></div>
+      </div>
+      <aside class="notes">타깃 고객은 로봇은 있지만 특정 태스크의 대규모 데이터가 없는 연구실과 로봇 회사입니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">02 · Solution</div>
+      <h2>사람은 카메라 앞에서 작업하고,<br>우리는 <span class="green">로봇 데이터로 컴파일</span>합니다.</h2>
+      <div class="pipeline">
+        <div class="step">3인칭<br>RGB 영상</div><div class="arrow">→</div>
+        <div class="step">손 landmark<br>+ grasp phase</div><div class="arrow">→</div>
+        <div class="step">Object-centric<br>EE trajectory</div><div class="arrow">→</div>
+        <div class="step">Franka IK<br>+ MuJoCo 검증</div>
+      </div>
+      <div class="grid-2" style="margin-top:22px">
+        <div class="card solution"><h3>입력</h3><p>고객의 로봇 사양, URDF/제약, 태스크 정의, 촬영 영상</p></div>
+        <div class="card solution"><h3>출력</h3><p>7-DoF joint target, gripper, provenance, validation, rollout MP4</p></div>
+      </div>
+      <aside class="notes">중요: 영상에서 바로 관절각을 추출하는 것이 아닙니다. 영상은 task phase를 주고, 고객 장면과 로봇 제약으로 실행 가능한 trajectory를 컴파일합니다.</aside>
+    </section>
+
+    <section class="slide workflow-slide">
+      <img class="workflow-image" src="media/dataminer-workflow-v3.jpg" alt="Reflex와 Runloop Devbox로 운영되는 Dataminer 관리형 데이터 파이프라인" />
+      <aside class="notes">한 장 요약: 고객은 로봇과 태스크를 정의합니다. Dataminer는 사람 촬영부터 물리 검증과 데이터 확장까지 수행해 검증된 데이터셋을 납품하고, 고객이 그 데이터로 정책을 학습합니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">03 · Demo 1 · Verified on Runloop</div>
+      <h2>공개 검증 영상 → Franka 물리 성공</h2>
+      <div class="video-wrap">
+        <span class="video-badge">TASK SUCCESS</span>
+        <video src="media/demo1_human_vs_franka_h264.mp4" controls muted loop playsinline></video>
+      </div>
+      <div class="metric-row">
+        <div class="metric"><b>91.2%</b><span>손 검출률</span></div>
+        <div class="metric"><b>91 / 91</b><span>IK valid frames</span></div>
+        <div class="metric"><b>0</b><span>금지 충돌</span></div>
+        <div class="metric"><b>0.38 mm</b><span>최종 목표 거리</span></div>
+      </div>
+      <aside class="notes">이 입력은 재현 가능한 Do As I Do 공개 미리보기이며 직접 촬영했다고 주장하지 않습니다. 실제 Runloop Devbox에서 실행하고 OSMesa 물리 MP4까지 회수했습니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">04 · Demo 2 · Data Engine</div>
+      <h2>공개 RGB 영상 3개를 요청해, 검증된 seed 2개를<br><span class="accent">500개 물리 검증 episode</span>로 확장했습니다.</h2>
+      <div class="flow">
+        <div class="flow-row"><div class="role">DexYCB subject-07</div><div>3개 요청 · 2개 검증/선택, 고정 카메라 자동 선택</div><div class="status">RGB</div></div>
+        <div class="flow-row"><div class="role">Human segment</div><div>MediaPipe 기반 approach · grasp · lift</div><div class="status">Provenance</div></div>
+        <div class="flow-row"><div class="role">Generated segment</div><div>MuJoCo 기반 carry · place · release</div><div class="status">Hybrid</div></div>
+        <div class="flow-row"><div class="role">Physics generation</div><div>시작/목표 위치를 바꾸고 성공한 episode만 저장</div><div class="status">500 / 500</div></div>
+      </div>
+      <div class="honesty">DexYCB GT pose/depth는 trajectory 입력에 사용하지 않습니다. CC BY-NC 4.0이므로 현재 데모는 연구·비상업 용도입니다.</div>
+      <aside class="notes">DexYCB에는 place가 없기 때문에 human pickup과 generated place를 섞되, 구간을 데이터에 명확히 기록합니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">05 · Learning</div>
+      <h2>Phase-conditioned Behavior Cloning</h2>
+      <div class="model">
+        <div class="block"><b>31-D</b><h3>Observation</h3><small>robot state · object/target relative pose<br>7-phase one-hot · phase progress</small></div>
+        <div class="arch-arrow">→</div>
+        <div class="block"><b>3 × 512</b><h3>MLP Policy</h3><small>chunk = 1<br>매 control step 재추론</small></div>
+        <div class="arch-arrow">→</div>
+        <div class="block"><b>8-D</b><h3>Action</h3><small>7 absolute joint targets<br>+ gripper command</small></div>
+      </div>
+      <div class="honesty">최종 합격 기준: 학습과 분리된 20개 환경 중 <strong>10개 이상 성공</strong>. 미달 시 성공 영상만 골라 통과 처리하지 않습니다.</div>
+      <aside class="notes">기존 delta action 누적오차를 줄이기 위해 absolute joint target과 매 스텝 재추론으로 변경했습니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">06 · Infrastructure</div>
+      <h2>각 제품은 한 가지 역할만 맡습니다.</h2>
+      <div class="arch">
+        <div class="arch-box"><big>Runloop</big><h3>Transform</h3><p>고객별 Devbox<br>영상 → 데이터</p></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box"><big>RunPod</big><h3>Train</h3><p>DexYCB 12GB 처리<br>GPU 학습 · 평가</p></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box"><big>Reflex</big><h3>Operate</h3><p>지시 · 로그 · 실패 원인<br>artifact 요약</p></div>
+      </div>
+      <div class="honesty">RunPod는 RTX 4090 → A40 → L4 순서로 요청하고, 성공·실패 모두 `finally`에서 Pod를 삭제합니다.</div>
+      <aside class="notes">Reflex가 직접 계산하는 게 아닙니다. Runloop와 RunPod를 한 세션에서 지시하고 감사 가능하게 만드는 운영 레이어입니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">07 · Build Status</div>
+      <h2>현재 어디까지 실제로 됐는가</h2>
+      <div class="checklist">
+        <div class="check"><div class="icon">✓</div><div><strong>Runloop 실제 E2E</strong><p>91프레임 변환 · MuJoCo 병 이동 · artifact 회수</p></div><span class="state done">완료</span></div>
+        <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>subject-07 12GB 다운로드 · RGB seed 2개 · Pod 자동 삭제 계약</p></div><span class="state done">80 TESTS</span></div>
+        <div class="check"><div class="icon">✓</div><div><strong>RunPod 데이터 생성</strong><p>물리 검증 episode 500 / 500 · 총 100,360 step</p></div><span class="state done">완료</span></div>
+        <div class="check"><div class="icon">○</div><div><strong>RunPod 최종 학습 / 20회 평가</strong><p>RTX 4090에서 phase-conditioned BC 실행 중</p></div><span class="state pending">실행 중</span></div>
+      </div>
+      <aside class="notes">이 슬라이드는 신뢰를 위한 것입니다. 500개 데이터 생성까지 완료했지만, 20회 최종 평가가 끝나기 전에는 학습 성공률을 주장하지 않습니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">08 · Business Model</div>
+      <h2>로봇 회사가 태스크를 주면,<br>우리는 <span class="green">학습 가능한 데이터</span>를 납품합니다.</h2>
+      <div class="business">
+        <div class="card"><span class="num">01</span><h3>Customer spec</h3><p>로봇 사양<br>태스크 · 제약 · 성공 조건</p></div>
+        <div class="arrow-lg">→</div>
+        <div class="card"><span class="num">02</span><h3>Managed capture</h3><p>작업자 고용<br>카메라 세팅 · 촬영 QA</p></div>
+        <div class="arrow-lg">→</div>
+        <div class="card"><span class="num">03</span><h3>Data delivery</h3><p>trajectory · provenance<br>validation · policy baseline</p></div>
+      </div>
+      <aside class="notes">단순 데이터 라벨링이 아니라 로봇별 실행 가능성까지 검증된 episode 납품입니다.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="eyebrow">09 · Closing</div>
+      <div class="quote">“로봇을 직접 조종해서 데이터를 모으는 대신,<br><span class="accent">사람이 하는 일을 촬영</span>하고<br>로봇 데이터로 컴파일한다.”</div>
+      <p style="margin-top:32px">Human demonstrations at camera scale. Robot trajectories at simulation precision.</p>
+      <div class="title-meta"><span class="pill">GitHub: codex/demo-runloop-reflex</span><span class="pill">Franka mustard bottle A → B</span></div>
+      <aside class="notes">마무리: 고객이 로봇과 태스크를 주면, 우리는 촬영부터 검증된 학습 데이터까지 제공할 수 있습니다.</aside>
+    </section>
+
+    <section class="slide workflow-slide">
+      <img class="workflow-image" src="media/sponsor-stack.jpg" alt="Runloop, Codex, and RunPod sponsor technology stack" />
+      <aside class="notes">스폰서 감사: Runloop는 격리된 실행과 모니터링, Codex는 전체 시스템 개발과 통합, RunPod는 GPU 학습과 평가에 사용했습니다.</aside>
+    </section>
+  </main>
+
+  <div class="hint">← → / Space · N notes · F fullscreen</div>
+  <div class="footer">DATAMINER · Robot Data Infrastructure <a id="langLink" class="lang-link" href="en.html">EN</a></div>
+  <div class="counter"><span id="current">01</span> / <span id="total">10</span></div>
+  <div class="progress"><div id="bar"></div></div>
+
+  <script>
+    const english = new URLSearchParams(location.search).get('lang') === 'en';
+    if (english) {
+      document.documentElement.lang = 'en';
+      document.title = 'Dataminer — Human Video to Robot Training Data';
+      document.querySelector('#langLink').textContent = 'KO';
+      document.querySelector('#langLink').href = 'index.html';
+      const translatedSlides = [
+      `<img class="workflow-image" src="media/cover-pierr.jpg" alt="Dataminer PIERR cover: human video to robot data" />
+      <aside class="notes">Opening: PIERR extracts physical interaction from human video and retargets it into validated robot-ready data.</aside>`,
+        `<div class="eyebrow">01 · Problem</div>
+        <h2>Robot training data is<br><span class="red">expensive, slow, and robot-specific.</span></h2>
+        <div class="grid-3">
+          <div class="card problem"><span class="num">01</span><h3>Teleoperation</h3><p>Skilled operators must repeatedly control physical robots.</p></div>
+          <div class="card problem"><span class="num">02</span><h3>Robot-specific</h3><p>The same task must be recollected for different joints and constraints.</p></div>
+          <div class="card problem"><span class="num">03</span><h3>Scale</h3><p>Costs explode as soon as teams need hundreds or thousands of episodes.</p></div>
+        </div>
+        <aside class="notes">Our customers are robotics teams that have a robot, but lack task-specific data at scale.</aside>`,
+        `<div class="eyebrow">02 · Solution</div>
+        <h2>People perform tasks on camera.<br>We <span class="green">compile them into robot data.</span></h2>
+        <div class="pipeline">
+          <div class="step">Third-person<br>RGB video</div><div class="arrow">→</div>
+          <div class="step">Hand landmarks<br>+ grasp phase</div><div class="arrow">→</div>
+          <div class="step">Object-centric<br>EE trajectory</div><div class="arrow">→</div>
+          <div class="step">Franka IK<br>+ MuJoCo validation</div>
+        </div>
+        <div class="grid-2" style="margin-top:22px">
+          <div class="card solution"><h3>Input</h3><p>Robot specification, URDF and constraints, task definition, captured video</p></div>
+          <div class="card solution"><h3>Output</h3><p>7-DoF joint targets, gripper actions, provenance, validation, rollout MP4</p></div>
+        </div>
+        <aside class="notes">We do not directly infer joint angles from pixels. Video provides task phases; robot constraints compile them into executable trajectories.</aside>`,
+        `<img class="workflow-image" src="media/dataminer-workflow-v3.jpg" alt="Dataminer managed data pipeline orchestrated by Reflex and executed in a Runloop Devbox" />
+        <aside class="notes">One-slide summary: the customer defines the robot and task. Dataminer owns capture through validated data at scale. The customer then trains the policy.</aside>`,
+        `<div class="eyebrow">03 · Demo 1 · Verified on Runloop</div>
+        <h2>Public reference video → successful Franka execution</h2>
+        <div class="video-wrap"><span class="video-badge">TASK SUCCESS</span><video src="media/demo1_human_vs_franka_h264.mp4" controls muted loop playsinline></video></div>
+        <div class="metric-row">
+          <div class="metric"><b>91.2%</b><span>hand detection</span></div>
+          <div class="metric"><b>91 / 91</b><span>valid IK frames</span></div>
+          <div class="metric"><b>0</b><span>forbidden collisions</span></div>
+          <div class="metric"><b>0.38 mm</b><span>final target distance</span></div>
+        </div>
+        <aside class="notes">The input is an attributed Do As I Do public preview, not a newly recorded proprietary take. The pipeline ran on an actual Runloop Devbox and recovered the MuJoCo rollout.</aside>`,
+        `<div class="eyebrow">04 · Demo 2 · Data Engine</div>
+        <h2>We request 3 public RGB videos, verify 2 seeds, and expand them into<br><span class="accent">500 physics-validated episodes.</span></h2>
+        <div class="flow">
+          <div class="flow-row"><div class="role">DexYCB subject-07</div><div>3 requested · 2 verified/selected; automatic fixed-camera selection</div><div class="status">RGB</div></div>
+          <div class="flow-row"><div class="role">Human segment</div><div>MediaPipe-based approach · grasp · lift</div><div class="status">Provenance</div></div>
+          <div class="flow-row"><div class="role">Generated segment</div><div>MuJoCo-based carry · place · release</div><div class="status">Hybrid</div></div>
+          <div class="flow-row"><div class="role">Physics generation</div><div>Randomize start and target; retain only successful episodes</div><div class="status">500 / 500</div></div>
+        </div>
+        <div class="honesty">DexYCB ground-truth pose and depth are not trajectory inputs. Its CC BY-NC 4.0 license limits this demo to research and non-commercial use.</div>
+        <aside class="notes">DexYCB has no place phase. We combine human pickup with generated placement and preserve segment provenance.</aside>`,
+        `<div class="eyebrow">05 · Learning</div>
+        <h2>Phase-conditioned Behavior Cloning</h2>
+        <div class="model">
+          <div class="block"><b>31-D</b><h3>Observation</h3><small>robot state · object/target relative pose<br>7-phase one-hot · phase progress</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="block"><b>3 × 512</b><h3>MLP Policy</h3><small>chunk = 1<br>re-infer every control step</small></div>
+          <div class="arch-arrow">→</div>
+          <div class="block"><b>8-D</b><h3>Action</h3><small>7 absolute joint targets<br>+ gripper command</small></div>
+        </div>
+        <div class="honesty">Final acceptance: succeed in <strong>at least 10 of 20</strong> held-out environments. We do not cherry-pick successful rollouts.</div>
+        <aside class="notes">Absolute joint targets and per-step inference reduce accumulated error from delta actions.</aside>`,
+        `<div class="eyebrow">06 · Infrastructure</div>
+        <h2>Each product owns one clear role.</h2>
+        <div class="arch">
+          <div class="arch-box"><big>Runloop</big><h3>Transform</h3><p>Customer Devbox<br>video → data</p></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box"><big>RunPod</big><h3>Train</h3><p>Process 12GB DexYCB<br>GPU train · evaluate</p></div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-box"><big>Reflex</big><h3>Operate</h3><p>Direct · inspect logs<br>summarize artifacts</p></div>
+        </div>
+        <div class="honesty">RunPod requests RTX 4090 → A40 → L4 and deletes the Pod after either success or failure.</div>
+        <aside class="notes">Reflex is the auditable operations layer coordinating Runloop and RunPod—not the compute engine itself.</aside>`,
+        `<div class="eyebrow">07 · Build Status</div>
+        <h2>What is actually working today?</h2>
+        <div class="checklist">
+          <div class="check"><div class="icon">✓</div><div><strong>Runloop end-to-end</strong><p>91-frame transform · MuJoCo bottle motion · artifact recovery</p></div><span class="state done">DONE</span></div>
+          <div class="check"><div class="icon">✓</div><div><strong>DexYCB + RunPod runner</strong><p>12GB subject-07 download · 2 RGB seeds · automatic Pod cleanup contract</p></div><span class="state done">80 TESTS</span></div>
+          <div class="check"><div class="icon">✓</div><div><strong>RunPod data generation</strong><p>500 / 500 physics-validated episodes · 100,360 steps</p></div><span class="state done">DONE</span></div>
+          <div class="check"><div class="icon">○</div><div><strong>Final RunPod training / 20 trials</strong><p>Phase-conditioned BC is running on an RTX 4090</p></div><span class="state pending">RUNNING</span></div>
+        </div>
+        <aside class="notes">The 500-episode dataset is complete, but we do not claim final policy performance until the held-out 20-trial evaluation finishes.</aside>`,
+        `<div class="eyebrow">08 · Business Model</div>
+        <h2>Give us the robot and task.<br>We deliver <span class="green">trainable data.</span></h2>
+        <div class="business">
+          <div class="card"><span class="num">01</span><h3>Customer spec</h3><p>robot configuration<br>task · constraints · success criteria</p></div>
+          <div class="arrow-lg">→</div>
+          <div class="card"><span class="num">02</span><h3>Managed capture</h3><p>hire operators<br>camera setup · capture QA</p></div>
+          <div class="arrow-lg">→</div>
+          <div class="card"><span class="num">03</span><h3>Data delivery</h3><p>trajectory · provenance<br>validation · policy baseline</p></div>
+        </div>
+        <aside class="notes">This is not generic labeling. Dataminer delivers robot-specific episodes validated for execution.</aside>`,
+        `<div class="eyebrow">09 · Closing</div>
+        <div class="quote">“Instead of teleoperating robots to collect data,<br><span class="accent">film people doing the work</span><br>and compile it into robot data.”</div>
+        <p style="margin-top:32px">Human demonstrations at camera scale. Robot trajectories at simulation precision.</p>
+        <div class="title-meta"><span class="pill">DATAMINER</span><span class="pill">Franka mustard bottle A → B</span></div>
+        <aside class="notes">Closing: customers provide the robot and task; Dataminer handles capture through validated training data.</aside>`,
+        `<img class="workflow-image" src="media/sponsor-stack.jpg" alt="Runloop, Codex, and RunPod sponsor technology stack" />
+        <aside class="notes">Sponsor acknowledgement: Runloop provided isolated execution and monitoring, Codex powered development and integration, and RunPod supplied GPU training and evaluation.</aside>`
+      ];
+      document.querySelectorAll('.slide').forEach((slide, i) => slide.innerHTML = translatedSlides[i]);
+    }
+    const slides = [...document.querySelectorAll('.slide')];
+    let index = 0;
+    const clamp = value => Math.max(0, Math.min(slides.length - 1, value));
+    function show(next, pushHistory = true) {
+      index = clamp(next);
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+        slide.classList.toggle('before', i < index);
+        slide.querySelectorAll('video').forEach(video => i === index ? video.play().catch(() => {}) : video.pause());
+      });
+      document.querySelector('#current').textContent = String(index + 1).padStart(2, '0');
+      document.querySelector('#total').textContent = String(slides.length).padStart(2, '0');
+      document.querySelector('#bar').style.width = `${((index + 1) / slides.length) * 100}%`;
+      if (pushHistory) history.replaceState(null, '', `#${index + 1}`);
+    }
+    function key(event) {
+      if (['ArrowRight','ArrowDown','PageDown',' '].includes(event.key)) { event.preventDefault(); show(index + 1); }
+      if (['ArrowLeft','ArrowUp','PageUp'].includes(event.key)) { event.preventDefault(); show(index - 1); }
+      if (event.key === 'Home') show(0);
+      if (event.key === 'End') show(slides.length - 1);
+      if (event.key.toLowerCase() === 'n') document.body.classList.toggle('show-notes');
+      if (event.key.toLowerCase() === 'f') document.documentElement.requestFullscreen?.();
+    }
+    document.addEventListener('keydown', key);
+    document.addEventListener('click', event => {
+      if (event.target.closest('video, button, a')) return;
+      show(index + (event.clientX > innerWidth / 2 ? 1 : -1));
+    });
+    let touchX = null;
+    document.addEventListener('touchstart', e => touchX = e.changedTouches[0].clientX, {passive:true});
+    document.addEventListener('touchend', e => {
+      if (touchX === null) return;
+      const delta = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(delta) > 50) show(index + (delta < 0 ? 1 : -1));
+      touchX = null;
+    }, {passive:true});
+    const hash = Number(location.hash.slice(1));
+    show(Number.isFinite(hash) && hash > 0 ? hash - 1 : 0, false);
+  </script>
+</body>
+</html>
